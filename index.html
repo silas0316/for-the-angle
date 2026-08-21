@@ -1,0 +1,816 @@
+<title>For the Angle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,400&display=swap">
+
+<style>
+:root{
+  --page:#E7E8E4;
+  --panel:#F7F7F4;
+  --sunk:#DEDFDA;
+  --ink:#191B18;
+  --ink-2:#5C605A;
+  --ink-3:#8D9189;
+  --line:#CDCFC8;
+  --accent:#A9640F;
+  --accent-dim:#C89A5E;
+  --grid:#D3D5CE;
+  --ax-x:#B4543C;
+  --ax-y:#5E8438;
+  --ax-z:#3A6FA0;
+  --shadow:0 1px 0 rgba(25,27,24,.05), 0 8px 24px -18px rgba(25,27,24,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#121412;
+    --panel:#1A1D19;
+    --sunk:#141613;
+    --ink:#E9EAE4;
+    --ink-2:#A2A69C;
+    --ink-3:#72776D;
+    --line:#31352E;
+    --accent:#E2A44C;
+    --accent-dim:#8B6C3B;
+    --grid:#292D26;
+    --ax-x:#E08063;
+    --ax-y:#96BE5C;
+    --ax-z:#63A0D4;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 8px 24px -18px #000;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#121412;
+  --panel:#1A1D19;
+  --sunk:#141613;
+  --ink:#E9EAE4;
+  --ink-2:#A2A69C;
+  --ink-3:#72776D;
+  --line:#31352E;
+  --accent:#E2A44C;
+  --accent-dim:#8B6C3B;
+  --grid:#292D26;
+  --ax-x:#E08063;
+  --ax-y:#96BE5C;
+  --ax-z:#63A0D4;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 8px 24px -18px #000;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--page);
+  color:var(--ink);
+  font-family:"Archivo","Helvetica Neue",Arial,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:28px 20px 64px;display:flex;flex-direction:column;gap:18px}
+
+/* ---- header ---- */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px}
+h1{
+  font-size:19px;font-weight:600;margin:0;letter-spacing:-.01em;
+}
+.sub{
+  margin:2px 0 0;font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+}
+.reset{
+  font:500 11.5px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;
+  background:none;border:1px solid var(--line);color:var(--ink-2);
+  padding:7px 11px;border-radius:2px;cursor:pointer;
+}
+.reset:hover{border-color:var(--ink-3);color:var(--ink)}
+
+/* ---- subject chips ---- */
+.objs{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--panel);width:fit-content}
+.objs button{
+  font:500 12px/1 "Archivo",sans-serif;
+  background:none;border:0;border-right:1px solid var(--line);
+  color:var(--ink-2);padding:9px 15px;cursor:pointer;
+}
+.objs button:last-child{border-right:0}
+.objs button:hover{color:var(--ink);background:var(--sunk)}
+.objs button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+
+/* ---- viewports ---- */
+.stage{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pane{margin:0;position:relative;background:var(--panel);border:1px solid var(--line);border-radius:3px;box-shadow:var(--shadow);overflow:hidden}
+.pane canvas{display:block;width:100%;aspect-ratio:3/2;touch-action:none;cursor:grab}
+.pane canvas:active{cursor:grabbing}
+.pane canvas:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.cap{
+  position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
+  padding:8px 10px;pointer-events:none;
+  font:500 10.5px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+}
+.cap b{font-weight:500;color:var(--ink-2)}
+/* viewfinder corner ticks on the camera pane */
+.ticks{position:absolute;inset:22px 14px 14px;pointer-events:none}
+.ticks i{position:absolute;width:13px;height:13px;border:0 solid var(--accent-dim)}
+.ticks i:nth-child(1){top:0;left:0;border-top-width:1.5px;border-left-width:1.5px}
+.ticks i:nth-child(2){top:0;right:0;border-top-width:1.5px;border-right-width:1.5px}
+.ticks i:nth-child(3){bottom:0;left:0;border-bottom-width:1.5px;border-left-width:1.5px}
+.ticks i:nth-child(4){bottom:0;right:0;border-bottom-width:1.5px;border-right-width:1.5px}
+.hint{
+  position:absolute;bottom:8px;left:10px;pointer-events:none;
+  font:400 10.5px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.05em;color:var(--ink-3);
+}
+
+/* ---- control rack ---- */
+.rack{background:var(--panel);border:1px solid var(--line);border-radius:3px;box-shadow:var(--shadow)}
+.row{display:grid;grid-template-columns:6.5rem minmax(0,1fr) 14rem;align-items:center;gap:14px;padding:11px 16px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row>label,.row>.lbl{
+  font:500 11px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);
+}
+.note{font-size:13px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+.note b{font-weight:500;color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px}
+
+.row>.lbl em{font-style:normal;color:var(--ink-3);margin-left:.45em;letter-spacing:.06em}
+.row--read{background:var(--sunk)}
+.read{font:500 13px/1 "IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;color:var(--ink);letter-spacing:.02em}
+.step{display:flex;align-items:center;gap:2px;width:fit-content;border:1px solid var(--line);border-radius:2px;background:var(--page)}
+.step button{
+  font:400 16px/1 "IBM Plex Mono",ui-monospace,monospace;
+  background:none;border:0;color:var(--ink-2);width:32px;height:30px;cursor:pointer;
+}
+.step button:hover{color:var(--accent)}
+.step .v{
+  font:500 13px/1 "IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;
+  min-width:56px;text-align:center;color:var(--ink);
+  border-left:1px solid var(--line);border-right:1px solid var(--line);padding:9px 0;
+}
+.ctl{display:flex;align-items:center;gap:8px}
+.lock{
+  font:500 10px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--page);border:1px solid var(--line);color:var(--ink-3);
+  padding:9px 10px;border-radius:2px;cursor:pointer;
+}
+.lock:hover{color:var(--ink);border-color:var(--ink-3)}
+.lock[data-lock="0"][aria-pressed="true"]{background:var(--ax-x);border-color:var(--ax-x);color:var(--panel)}
+.lock[data-lock="1"][aria-pressed="true"]{background:var(--ax-y);border-color:var(--ax-y);color:var(--panel)}
+.lock[data-lock="2"][aria-pressed="true"]{background:var(--ax-z);border-color:var(--ax-z);color:var(--panel)}
+.step button:disabled{opacity:.3;cursor:default}
+.step button:disabled:hover{color:var(--ink-2)}
+input[type=range]{width:100%;max-width:280px;accent-color:var(--accent);background:transparent}
+.lens{display:flex;gap:4px;flex-wrap:wrap}
+.lens button{
+  font:500 12px/1 "IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;
+  background:var(--page);border:1px solid var(--line);color:var(--ink-2);
+  padding:8px 9px;border-radius:2px;cursor:pointer;
+}
+.lens button:hover{color:var(--ink);border-color:var(--ink-3)}
+.lens button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+
+/* ---- output ---- */
+.out{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:3px;box-shadow:var(--shadow);padding:16px 18px 18px}
+.out__head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.tag{font:500 10.5px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.copy{
+  font:500 11px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--page);border:1px solid var(--line);color:var(--ink-2);padding:8px 13px;border-radius:2px;cursor:pointer;
+}
+.copy:hover{color:var(--ink);border-color:var(--ink-3)}
+.copy[data-done]{color:var(--accent);border-color:var(--accent)}
+#sentence{
+  margin:0;font-family:"Newsreader",Georgia,serif;font-size:20px;line-height:1.45;
+  letter-spacing:-.005em;color:var(--ink);max-width:62ch;
+}
+.foot{font:400 12px/1.6 "IBM Plex Mono",ui-monospace,monospace;color:var(--ink-3);letter-spacing:.02em}
+
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+@media (max-width:760px){
+  .stage{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr auto;gap:8px 12px}
+  .row>label,.row>.lbl{grid-column:1}
+  .note{grid-column:1/-1;text-align:left}
+  #sentence{font-size:18px}
+}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Camera Angle Rig</h1>
+      <p class="sub">Move the camera by X / Y / Z or drag to orbit · copy the sentence</p>
+    </div>
+    <button class="reset" id="reset">Reset</button>
+  </div>
+
+  <nav class="objs" id="objs" aria-label="Subject"></nav>
+
+  <div class="stage">
+    <figure class="pane">
+      <canvas id="rig" tabindex="0" aria-label="Rig view. Drag, or use arrow keys, to move the camera around the subject."></canvas>
+      <figcaption class="cap"><b>Rig</b><span id="capRig">az 45 · el 30</span></figcaption>
+      <span class="hint">drag a track to slide · click its letter to lock · drag empty space to orbit</span>
+    </figure>
+    <figure class="pane">
+      <canvas id="cam" tabindex="0" aria-label="Camera view. Drag, or use arrow keys, to move the camera around the subject."></canvas>
+      <div class="ticks"><i></i><i></i><i></i><i></i></div>
+      <figcaption class="cap"><b>Camera</b><span id="capCam">50mm</span></figcaption>
+    </figure>
+  </div>
+
+  <div class="rack">
+    <div class="row">
+      <span class="lbl">X <em>side</em></span>
+      <div class="ctl">
+      <div class="step">
+        <button data-ax="0" data-d="-1" aria-label="Move camera toward the subject's left">−</button>
+        <span class="v" id="v-x">0.0</span>
+        <button data-ax="0" data-d="1" data-plus aria-label="Move camera toward the subject's right">+</button>
+      </div>
+      <button class="lock" data-lock="0" aria-pressed="false" aria-label="Lock the X axis">Lock</button>
+      </div>
+      <span class="note" id="n-x"></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Y <em>height</em></span>
+      <div class="ctl">
+      <div class="step">
+        <button data-ax="1" data-d="-1" aria-label="Lower camera">−</button>
+        <span class="v" id="v-y">0.0</span>
+        <button data-ax="1" data-d="1" data-plus aria-label="Raise camera">+</button>
+      </div>
+      <button class="lock" data-lock="1" aria-pressed="false" aria-label="Lock the Y axis">Lock</button>
+      </div>
+      <span class="note" id="n-y"></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Z <em>depth</em></span>
+      <div class="ctl">
+      <div class="step">
+        <button data-ax="2" data-d="-1" aria-label="Move camera behind the subject">−</button>
+        <span class="v" id="v-z">0.0</span>
+        <button data-ax="2" data-d="1" data-plus aria-label="Move camera in front of the subject">+</button>
+      </div>
+      <button class="lock" data-lock="2" aria-pressed="false" aria-label="Lock the Z axis">Lock</button>
+      </div>
+      <span class="note" id="n-z"></span>
+    </div>
+    <div class="row">
+      <label for="dist">Distance</label>
+      <input id="dist" type="range" min="1.5" max="10" step="0.5" value="3.5">
+      <span class="note"><b id="v-d">3.5</b> <span id="n-d"></span></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Lens</span>
+      <div class="lens" id="lens"></div>
+      <span class="note" id="n-f"></span>
+    </div>
+    <div class="row row--read">
+      <span class="lbl">Angle</span>
+      <span class="read" id="v-ang">45° az · +30° el</span>
+      <span class="note" id="n-ang"></span>
+    </div>
+  </div>
+
+  <section class="out">
+    <div class="out__head">
+      <span class="tag">Prompt text</span>
+      <button class="copy" id="copy">Copy</button>
+    </div>
+    <p id="sentence">&nbsp;</p>
+  </section>
+
+  <p class="foot">Front of the subject faces the <b>FRONT</b> marker in the rig view. Left / right are the subject's own.</p>
+</div>
+
+<script>
+"use strict";
+const D2R=Math.PI/180;
+
+/* ---------- tiny vec3 ---------- */
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const scl=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return scl(a,1/l)};
+const X=[1,0,0],Y=[0,1,0],Z=[0,0,1];
+
+/* ---------- geometry helpers ---------- */
+const path=(...p)=>p.slice(1).map((q,i)=>[p[i],q]);
+const mirX=ls=>ls.map(([a,b])=>[[-a[0],a[1],a[2]],[-b[0],b[1],b[2]]]);
+function box(cx,cy,cz,sx,sy,sz){
+  const v=[];
+  for(let i=0;i<8;i++)v.push([cx+(i&1?sx:-sx),cy+(i&2?sy:-sy),cz+(i&4?sz:-sz)]);
+  return [[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]].map(([a,b])=>[v[a],v[b]]);
+}
+function ring(c,u,v,r,n=28){
+  const p=[];
+  for(let i=0;i<=n;i++){const t=i/n*2*Math.PI,co=Math.cos(t)*r,si=Math.sin(t)*r;
+    p.push([c[0]+u[0]*co+v[0]*si, c[1]+u[1]*co+v[1]*si, c[2]+u[2]*co+v[2]*si]);}
+  return path(...p);
+}
+
+/* ---------- subjects (all face +Z) ---------- */
+function sphereLines(r){
+  const out=[];
+  for(let m=0;m<6;m++){const a=m/6*Math.PI;out.push(...ring([0,0,0],[Math.cos(a),0,Math.sin(a)],Y,r,30));}
+  for(let k=1;k<=4;k++){const y=-r+2*r*k/5,rr=Math.sqrt(Math.max(0,r*r-y*y));out.push(...ring([0,y,0],X,Z,rr,30));}
+  return out;
+}
+function human(){
+  const L=[];
+  L.push(...box(0,.72,0,.13,.16,.12));                    // head
+  L.push(...path([0,.72,.12],[0,.695,.235]));             // nose
+  L.push(...path([0,.50,0],[0,.56,0]));                   // neck
+  L.push(...box(0,.22,0,.22,.28,.115));                   // torso
+  L.push(...box(0,-.12,0,.17,.09,.105));                  // pelvis
+  const arm=path([.22,.46,0],[.30,.16,.05],[.30,-.10,.12]);
+  L.push(...arm,...mirX(arm));
+  const leg=path([.11,-.21,0],[.12,-.55,.02],[.12,-.88,-.02],[.12,-.90,.13]);
+  L.push(...leg,...mirX(leg));
+  return L;
+}
+function car(){
+  const L=[...box(0,.05,0,.42,.2,1.0),...box(0,.36,-.10,.36,.16,.5)];
+  const w=(x,z)=>ring([x,-.15,z],Y,Z,.22,20);
+  L.push(...w(.44,.62),...w(-.44,.62),...w(.44,-.62),...w(-.44,-.62));
+  L.push(...ring([.26,.08,1.001],X,Y,.09,16),...ring([-.26,.08,1.001],X,Y,.09,16)); // headlights
+  return L;
+}
+function phone(){
+  const w=.34,h=.70,t=.045,z=t+.003,cz=-t-.003;
+  const L=[...box(0,0,0,w,h,t)];
+  const sw=w-.045,sh=h-.06;
+  L.push(...path([-sw,-sh,z],[sw,-sh,z],[sw,sh,z],[-sw,sh,z],[-sw,-sh,z]));  // screen
+  L.push(...path([-.10,sh-.05,z],[.10,sh-.05,z]));                            // earpiece
+  L.push(...path([-.13,-sh+.045,z],[.13,-sh+.045,z]));                        // home indicator
+  L.push(...path([-.26,h-.07,cz],[-.10,h-.07,cz],[-.10,h-.23,cz],[-.26,h-.23,cz],[-.26,h-.07,cz])); // rear camera
+  return L;
+}
+function laptop(){
+  const bw=.55,bd=.375,by0=-.33,by1=-.28,H=.72,i=.05;
+  const L=[...box(0,(by0+by1)/2,0,bw,(by1-by0)/2,bd)];
+  const a=15*D2R,u=[0,Math.cos(a),-Math.sin(a)];      // lid, tilted back off the hinge
+  const b1=[-bw,by1,-bd],b2=[bw,by1,-bd];
+  L.push(...path(b1,add(b1,scl(u,H)),add(b2,scl(u,H)),b2));
+  const ib1=add([-bw+i,by1,-bd],scl(u,i)),ib2=add([bw-i,by1,-bd],scl(u,i));
+  L.push(...path(ib1,add(ib1,scl(u,H-2*i)),add(ib2,scl(u,H-2*i)),ib2,ib1));   // display
+  const y=by1+.003;
+  L.push(...path([-bw+.06,y,-bd+.06],[bw-.06,y,-bd+.06],[bw-.06,y,.08],[-bw+.06,y,.08],[-bw+.06,y,-bd+.06]));
+  L.push(...path([-.16,y,.14],[.16,y,.14],[.16,y,bd-.05],[-.16,y,bd-.05],[-.16,y,.14]));
+  return L;
+}
+function room(){
+  const rx=2.2,ry=1.3,rz=2.6,L=[...box(0,0,0,rx,ry,rz)];
+  for(let i=-1;i<=1;i++){
+    L.push(...path([-rx,-ry,i*rz/2],[rx,-ry,i*rz/2]));
+    L.push(...path([i*rx/1.5,-ry,-rz],[i*rx/1.5,-ry,rz]));
+  }
+  L.push(...path([-.45,-ry,rz],[-.45,.25,rz],[.45,.25,rz],[.45,-ry,rz]));                 // door, front wall
+  L.push(...path([rx,-.1,-.9],[rx,.7,-.9],[rx,.7,.9],[rx,-.1,.9],[rx,-.1,-.9]));          // window, right wall
+  return L;
+}
+const OBJECTS={
+  cube:  {label:"Cube",  subj:"the cube",   rad:1.00, hw:0.95, hh:0.72, ground:-0.70, dmin:1.5, dmax:12, d0:4.5,
+          lines:()=>[...box(0,0,0,.7,.7,.7),[[-.35,-.35,.705],[.35,.35,.705]],[[-.35,.35,.705],[.35,-.35,.705]]]},
+  sphere:{label:"Sphere",subj:"the sphere", rad:0.85, hw:0.80, hh:0.80, ground:-0.80, dmin:1.5, dmax:12, d0:4.0,
+          lines:()=>[...sphereLines(.8),...ring([0,0,.775],X,Y,.2,20)]},
+  phone: {label:"Phone",  subj:"the phone",  rad:0.78, hw:0.34, hh:0.70, ground:-0.70, dmin:1.2, dmax:12, d0:4.5, lines:phone},
+  laptop:{label:"Laptop", subj:"the laptop", rad:0.70, hw:0.56, hh:0.38, ground:-0.33, dmin:1.0, dmax:10, d0:3.5, lines:laptop},
+  human: {label:"Human", subj:"the figure", rad:0.95, hw:0.35, hh:0.95, ground:-0.90, dmin:2, dmax:16, d0:7.0, lines:human},
+  car:   {label:"Car",   subj:"the car",    rad:1.15, hw:1.05, hh:0.55, ground:-0.37, dmin:2.5, dmax:20, d0:7.0, lines:car},
+  room:  {label:"Room",  subj:"the room",   rad:2.90, hw:2.90, hh:1.40, ground:-1.30, dmin:0.5, dmax:20, d0:1.5,
+          lines:room, noGround:true, interior:2.0},
+};
+
+/* ---------- camera + projection ---------- */
+function camPos(az,el,d){
+  const a=az*D2R,e=el*D2R,c=Math.cos(e);
+  return [-d*c*Math.sin(a), d*Math.sin(e), d*c*Math.cos(a)];
+}
+function view(eye,target){
+  const f=norm(sub(target,eye));
+  const up=Math.abs(f[1])>0.999?Z:Y;
+  const r=norm(cross(f,up));
+  return {eye,r,u:cross(r,f),f};
+}
+const toView=(p,V)=>{const q=sub(p,V.eye);return [dot(q,V.r),dot(q,V.u),dot(q,V.f)];};
+function padlock(ctx,x,y,s,color,bg){
+  ctx.beginPath();ctx.arc(x,y-s*0.42,s*0.30,Math.PI,0);
+  ctx.strokeStyle=bg;ctx.lineWidth=s*0.42;ctx.stroke();
+  ctx.strokeStyle=color;ctx.lineWidth=s*0.18;ctx.stroke();
+  ctx.fillStyle=bg;ctx.fillRect(x-s*0.55,y-s*0.30,s*1.1,s*0.85);
+  ctx.fillStyle=color;ctx.fillRect(x-s*0.45,y-s*0.22,s*0.9,s*0.7);
+}
+function proj(p,V,sc,cx,cy){
+  const q=toView(p,V);
+  return q[2]<0.05 ? null : [cx+q[0]/q[2]*sc, cy-q[1]/q[2]*sc];
+}
+function strokeLines(ctx,lines,V,sc,cx,cy){
+  const NEAR=0.04;
+  ctx.beginPath();
+  for(const seg of lines){
+    let a=toView(seg[0],V),b=toView(seg[1],V);
+    if(a[2]<NEAR&&b[2]<NEAR)continue;
+    if(a[2]<NEAR){const t=(NEAR-a[2])/(b[2]-a[2]);a=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,NEAR];}
+    else if(b[2]<NEAR){const t=(NEAR-b[2])/(a[2]-b[2]);b=[b[0]+(a[0]-b[0])*t,b[1]+(a[1]-b[1])*t,NEAR];}
+    ctx.moveTo(cx+a[0]/a[2]*sc, cy-a[1]/a[2]*sc);
+    ctx.lineTo(cx+b[0]/b[2]*sc, cy-b[1]/b[2]*sc);
+  }
+  ctx.stroke();
+}
+
+/* ---------- state ---------- */
+const LENSES=[18,24,35,50,85,135,200];
+// The camera position S.p is the truth; az / el / d are derived from it by sync().
+// That lets the X/Y/Z steppers and the orbit drag write to the same place.
+const S={obj:"cube",p:[0,0,4.5],az:45,el:30,d:4.5,f:50};
+const RIG={az:335,el:30,f:28};
+let AXES=[];        // screen-space axis segments from the last rig render, for hit-testing
+let hoverAx=null;   // which track the cursor is over
+const LOCK=[false,false,false];
+// Every interactive camera move routes through here, so a locked axis holds
+// even when the move came from orbiting or dollying rather than that axis.
+function setP(np){
+  const o=OBJECTS[S.obj];
+  for(let i=0;i<3;i++) if(LOCK[i]) np[i]=S.p[i];
+  const d=Math.hypot(np[0],np[1],np[2]);
+  if(d<o.dmin||d>o.dmax) return;   // refuse rather than slide the camera sideways to fit
+  S.p=np;render();
+}
+function toggleLock(i){LOCK[i]=!LOCK[i];hoverAx=null;render();}
+function nearestAxis(px,py){
+  let best=null,bd=12;
+  for(const A of AXES){
+    if(LOCK[A.comp])continue;
+    const vx=A.b[0]-A.a[0],vy=A.b[1]-A.a[1],l2=vx*vx+vy*vy;
+    if(l2<4)continue;
+    const t=Math.max(0,Math.min(1,((px-A.a[0])*vx+(py-A.a[1])*vy)/l2));
+    const d=Math.hypot(px-(A.a[0]+vx*t), py-(A.a[1]+vy*t));
+    if(d<bd){bd=d;best=A;}
+  }
+  return best;
+}
+
+const $=id=>document.getElementById(id);
+const rigCv=$("rig"),camCv=$("cam"),distEl=$("dist");
+const CSS=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+function fit(cv){
+  const r=cv.getBoundingClientRect();
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+  return dpr;
+}
+function sync(){
+  const o=OBJECTS[S.obj];
+  let d=Math.hypot(S.p[0],S.p[1],S.p[2]);
+  if(!isFinite(d)||d<o.dmin||d>o.dmax){
+    const nd=Math.min(o.dmax,Math.max(o.dmin,isFinite(d)&&d>1e-6?d:o.d0));
+    S.p = d>1e-6 ? scl(S.p,nd/d) : [0,0,nd];
+    d=nd;
+  }
+  S.d=d;
+  S.el=Math.asin(Math.max(-1,Math.min(1,S.p[1]/d)))/D2R;
+  S.az=((Math.atan2(-S.p[0],S.p[2])/D2R)%360+360)%360;
+}
+// Free XYZ placement means az/el land anywhere, so the wording buckets to the nearest 15°.
+const azKey=()=>((Math.round(S.az/15)*15)%360+360)%360;
+const elKey=()=>Math.max(-90,Math.min(90,Math.round(S.el/15)*15));
+
+function groundGrid(o){
+  const G=o.rad*2.8,n=6,L=[];
+  for(let i=0;i<=n;i++){const t=-G+2*G*i/n;
+    L.push([[-G,o.ground,t],[G,o.ground,t]],[[t,o.ground,-G],[t,o.ground,G]]);}
+  return L;
+}
+
+/* ---------- the two views ---------- */
+function drawCam(o,lines,grid){
+  const dpr=fit(camCv),ctx=camCv.getContext("2d"),W=camCv.width,H=camCv.height;
+  ctx.clearRect(0,0,W,H);
+  const V=view(camPos(S.az,S.el,S.d),[0,0,0]);
+  const sc=(W/2)*S.f/18;                       // 36mm-wide sensor
+  // rule of thirds
+  ctx.strokeStyle=CSS("--line");ctx.lineWidth=1*dpr;ctx.globalAlpha=.55;ctx.beginPath();
+  for(let i=1;i<3;i++){ctx.moveTo(W*i/3,0);ctx.lineTo(W*i/3,H);ctx.moveTo(0,H*i/3);ctx.lineTo(W,H*i/3);}
+  ctx.stroke();ctx.globalAlpha=1;
+  ctx.lineJoin=ctx.lineCap="round";
+  ctx.strokeStyle=CSS("--grid");ctx.lineWidth=1*dpr;strokeLines(ctx,grid,V,sc,W/2,H/2);
+  ctx.strokeStyle=CSS("--ink");ctx.lineWidth=1.6*dpr;strokeLines(ctx,lines,V,sc,W/2,H/2);
+}
+function drawRig(o,lines,grid){
+  const dpr=fit(rigCv),ctx=rigCv.getContext("2d"),W=rigCv.width,H=rigCv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.lineJoin=ctx.lineCap="round";
+  // fit the orbit plus the XYZ tracks hanging off the camera, so nothing clips
+  const AL=o.rad*1.5;
+  const span=Math.max(S.d,o.rad*1.6)*1.06+AL;
+  const V=view(camPos(RIG.az,RIG.el,span*1.7),[0,o.ground*0.3,0]);
+  const sc=(W/2)*RIG.f/18;
+  const acc=CSS("--accent");
+
+  ctx.strokeStyle=CSS("--grid");ctx.lineWidth=1*dpr;strokeLines(ctx,grid,V,sc,W/2,H/2);
+
+  // orbit ring + elevation arc
+  const rr=Math.abs(S.d*Math.cos(S.el*D2R)),yy=S.d*Math.sin(S.el*D2R);
+  ctx.strokeStyle=acc;ctx.lineWidth=1*dpr;ctx.globalAlpha=.32;
+  if(rr>0.06)strokeLines(ctx,ring([0,yy,0],X,Z,rr,48),V,sc,W/2,H/2);
+  const arc=[];for(let i=0;i<=14;i++)arc.push(camPos(S.az,S.el*i/14,S.d));
+  strokeLines(ctx,path(...arc),V,sc,W/2,H/2);
+  ctx.globalAlpha=1;
+
+  ctx.strokeStyle=CSS("--ink");ctx.lineWidth=1.7*dpr;strokeLines(ctx,lines,V,sc,W/2,H/2);
+
+  // camera gizmo: frustum spread tracks the lens
+  const eye=camPos(S.az,S.el,S.d),Vc=view(eye,[0,0,0]);
+  ctx.setLineDash([3*dpr,4*dpr]);
+  ctx.strokeStyle=CSS("--ink-3");ctx.lineWidth=1*dpr;ctx.globalAlpha=.6;
+  strokeLines(ctx,[[eye,[eye[0],o.ground,eye[2]]]],V,sc,W/2,H/2);
+  ctx.setLineDash([]);ctx.globalAlpha=1;
+  const len=Math.min(S.d*0.45,o.rad*1.7);
+  const th=Math.tan(Math.atan(18/S.f)),tv=Math.tan(Math.atan(12/S.f));
+  const corner=(a,b)=>add(eye,scl(add(add(Vc.f,scl(Vc.r,th*a)),scl(Vc.u,tv*b)),len));
+  const c1=corner(1,1),c2=corner(-1,1),c3=corner(-1,-1),c4=corner(1,-1);
+  const frustum=[[eye,c1],[eye,c2],[eye,c3],[eye,c4],[c1,c2],[c2,c3],[c3,c4],[c4,c1]];
+  ctx.strokeStyle=CSS("--panel");ctx.lineWidth=4.5*dpr;
+  strokeLines(ctx,frustum,V,sc,W/2,H/2);
+  ctx.strokeStyle=acc;ctx.lineWidth=1.3*dpr;ctx.globalAlpha=.75;
+  strokeLines(ctx,frustum,V,sc,W/2,H/2);
+  ctx.globalAlpha=1;
+  const bs=Math.max(.09,o.rad*.12);
+  const bp=(a,b,c)=>add(eye,add(add(scl(Vc.r,a*bs),scl(Vc.u,b*bs*.75)),scl(Vc.f,c*bs*.9)));
+  const v=[];for(let i=0;i<8;i++)v.push(bp(i&1?1:-1,i&2?1:-1,i&4?1:-1));
+  const body=[[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]].map(([a,b])=>[v[a],v[b]]);
+  ctx.strokeStyle=CSS("--panel");ctx.lineWidth=5.5*dpr;strokeLines(ctx,body,V,sc,W/2,H/2);
+  ctx.strokeStyle=acc;ctx.lineWidth=1.9*dpr;strokeLines(ctx,body,V,sc,W/2,H/2);
+
+  // XYZ tracks through the camera - drawn last so they stay grabbable on top
+  // AXD holds the DISPLAYED axis directions: +X reads to the subject's right, which is world -X.
+  const AXD=[[-1,0,0],[0,1,0],[0,0,1]];
+  const AXC=[CSS("--ax-x"),CSS("--ax-y"),CSS("--ax-z")];
+  const steps=Math.floor(AL/0.5);
+  AXES=[];
+  ctx.textAlign="center";ctx.textBaseline="middle";
+  for(let i=0;i<3;i++){
+    const d=AXD[i], p0=add(eye,scl(d,-AL)), p1=add(eye,scl(d,AL));
+    const perp=i===1?[1,0,0]:[0,1,0];
+    const ticks=[];
+    for(let n=-steps;n<=steps;n++){
+      const c=add(eye,scl(d,n*0.5)), h=(n%2?0.045:0.085)*o.rad;
+      ticks.push([add(c,scl(perp,-h)),add(c,scl(perp,h))]);
+    }
+    ctx.strokeStyle=CSS("--panel");ctx.lineWidth=4*dpr;
+    strokeLines(ctx,[[p0,p1]],V,sc,W/2,H/2);
+    ctx.strokeStyle=AXC[i];
+    ctx.globalAlpha=LOCK[i]?.42:1;
+    if(LOCK[i])ctx.setLineDash([2.5*dpr,3.5*dpr]);
+    ctx.lineWidth=(hoverAx===i?2.8:1.4)*dpr;strokeLines(ctx,[[p0,p1]],V,sc,W/2,H/2);
+    ctx.setLineDash([]);
+    ctx.lineWidth=1.1*dpr;strokeLines(ctx,ticks,V,sc,W/2,H/2);
+    ctx.globalAlpha=1;
+    const sa=proj(p0,V,sc,W/2,H/2), sb=proj(p1,V,sc,W/2,H/2);
+    if(sb){
+      ctx.font=`600 ${12.5*dpr}px "IBM Plex Mono",monospace`;
+      ctx.lineWidth=3.5*dpr;ctx.strokeStyle=CSS("--panel");
+      ctx.strokeText("XYZ"[i],sb[0],sb[1]);
+      ctx.fillStyle=AXC[i];
+      ctx.fillText("XYZ"[i],sb[0],sb[1]);
+      if(LOCK[i])padlock(ctx,sb[0]+9*dpr,sb[1],7*dpr,AXC[i],CSS("--panel"));
+    }
+    if(sa&&sb)AXES.push({comp:i,sign:d[i],L:AL,
+      a:[sa[0]/dpr,sa[1]/dpr], b:[sb[0]/dpr,sb[1]/dpr]});
+  }
+
+  // FRONT marker
+  const fp=proj([0,o.ground,o.rad*2.0],V,sc,W/2,H/2);
+  if(fp){
+    ctx.fillStyle=CSS("--ink-3");
+    ctx.font=`500 ${10.5*dpr}px "IBM Plex Mono",monospace`;
+    ctx.fillText("FRONT",fp[0],fp[1]);
+  }
+}
+
+/* ---------- the sentence ---------- */
+function azText(a,subj){
+  const side=a<180?"right":"left", b=a<=180?a:360-a;
+  switch(b){
+    case 0:  return `Head-on frontal view of ${subj}`;
+    case 15: return `Near-frontal view of ${subj}, camera nudged slightly to its ${side}`;
+    case 30: return `Shallow three-quarter view from ${subj}'s front-${side}`;
+    case 45: return `Classic three-quarter view from ${subj}'s front-${side}`;
+    case 60: return `Wide three-quarter view from ${subj}'s front-${side}, side dominant`;
+    case 75: return `Near-profile view from ${subj}'s ${side}, front barely visible`;
+    case 90: return `Full side profile from ${subj}'s ${side}`;
+    case 105:return `Just past profile — ${subj}'s ${side} side and a hint of the back`;
+    case 120:return `Rear three-quarter view from ${subj}'s ${side}`;
+    case 135:return `Classic rear three-quarter view from ${subj}'s back-${side}`;
+    case 150:return `Mostly rear view, offset toward ${subj}'s ${side}`;
+    case 165:return `Near-rear view, camera barely off centre to the ${side}`;
+    default: return `Directly behind ${subj}`;
+  }
+}
+const EL_TEXT={
+  90:"shot from directly overhead, looking straight down",
+  75:"steep overhead angle looking down",
+  60:"high angle, camera well above the subject looking down",
+  45:"elevated camera looking down at the subject",
+  30:"moderately elevated camera looking downward",
+  15:"camera just above eye level, angled gently down",
+  0:"camera level with the subject",
+  "-15":"camera just below the subject, angled gently up",
+  "-30":"low angle, camera below the subject looking up",
+  "-45":"strong low angle looking up at the subject",
+  "-60":"very low angle, close to the ground looking up",
+  "-75":"extreme worm's-eye angle from near ground level",
+  "-90":"shot from directly underneath, looking straight up",
+};
+const LENS_TEXT={
+  18:"ultra-wide 18mm perspective, strong distortion at the edges",
+  24:"wide 24mm lens with pronounced perspective",
+  35:"mild wide-angle 35mm perspective",
+  50:"neutral 50mm perspective",
+  85:"85mm short telephoto, gently compressed perspective",
+  135:"135mm telephoto, strongly compressed perspective",
+  200:"200mm long telephoto, heavily flattened perspective",
+};
+function shotText(o){
+  const frac=Math.max(Math.atan(o.hw/S.d)/Math.atan(18/S.f),
+                      Math.atan(o.hh/S.d)/Math.atan(12/S.f));
+  if(frac>1.5) return ["extreme close-up",`extreme close-up, ${o.subj} overflowing the frame`];
+  if(frac>1.0) return ["close-up",`tight close-up, ${o.subj} filling the frame`];
+  if(frac>0.70)return ["medium close-up",`close framing, ${o.subj} dominating the frame`];
+  if(frac>0.45)return ["medium shot",`medium shot at moderate distance`];
+  if(frac>0.28)return ["medium-wide",`medium-wide shot with clear space around ${o.subj}`];
+  if(frac>0.15)return ["wide shot",`wide shot, ${o.subj} small within the frame`];
+  return ["very wide",`very wide establishing shot, ${o.subj} distant in the frame`];
+}
+const WALLS=["front wall","front-right corner","right wall","back-right corner","back wall",
+             "back-left corner","left wall","front-left corner"];
+function describe(o){
+  const azk=azKey(),elk=elKey();
+  const el=EL_TEXT[String(elk)].replace("the subject",o.subj);
+  if(o.interior&&S.d<=o.interior){
+    const w=WALLS[Math.round(azk/45)%8];
+    return `Interior view from inside the room, camera near the ${w} looking across the space, ${el}, ${LENS_TEXT[S.f]}.`;
+  }
+  // ponytail: at +/-90 elevation the camera sits on the axis, so azimuth changes nothing -
+  // saying "three-quarter view" there would contradict "straight down".
+  if(Math.abs(elk)===90){
+    const pole=elk>0
+      ? `Top-down bird's-eye view directly above ${o.subj}, looking straight down`
+      : `Extreme upward view from directly beneath ${o.subj}, looking straight up`;
+    return `${pole}, its front pointing toward the top of the frame, ${shotText(o)[1]}, ${LENS_TEXT[S.f]}.`;
+  }
+  return `${azText(azk,o.subj)}, ${el}, ${shotText(o)[1]}, ${LENS_TEXT[S.f]}.`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  sync();
+  const o=OBJECTS[S.obj];
+  const lines=o.lines(),grid=o.noGround?[]:groundGrid(o);
+  drawRig(o,lines,grid);
+  drawCam(o,lines,grid);
+
+  const fx=v=>(Math.abs(v)<0.05?0:v).toFixed(1);
+  const x=-S.p[0], y=S.p[1], z=S.p[2];   // shown X points to the subject's right
+  $("v-x").textContent=fx(x);
+  $("v-y").textContent=fx(y);
+  $("v-z").textContent=fx(z);
+  $("n-x").textContent=Math.abs(x)<0.05?"centred":`to ${o.subj}'s ${x>0?"right":"left"}`;
+  $("n-y").textContent=Math.abs(y)<0.05?"at subject height":(y>0?"above centre":"below centre");
+  $("n-z").textContent=Math.abs(z)<0.05?"beside the subject":(z>0?"in front":"behind");
+  $("v-d").textContent=S.d.toFixed(1);
+  const elSign=Math.round(S.el)>0?"+":"";
+  $("capRig").textContent=`az ${Math.round(S.az)}° · el ${elSign}${Math.round(S.el)}°`;
+  $("capCam").textContent=`${S.f}mm · ${S.d.toFixed(1)}`;
+
+  const azk=azKey(),elk=elKey();
+  const b=azk<=180?azk:360-azk, side=azk<180?"right":"left";
+  $("v-ang").textContent=`${Math.round(S.az)}° az · ${elSign}${Math.round(S.el)}° el`;
+  $("n-ang").textContent = (Math.abs(elk)===90?"overhead":
+      b===0?"head-on":b===180?"behind":b===90?`${side} profile`:
+      (b<90?`front-${side}`:`rear-${side}`))
+    + " · " + (S.el>45?"high angle":S.el>0.5?"above eye level":Math.abs(S.el)<=0.5?"eye level":
+      S.el>-45?"below eye level":"low angle");
+  $("n-d").textContent = (o.interior&&S.d<=o.interior)?"inside":shotText(o)[0];
+  $("n-f").textContent = S.f<=24?"wide":S.f<50?"mild wide":S.f===50?"neutral":S.f<=85?"short tele":"telephoto";
+
+  distEl.value=S.d;
+  document.querySelectorAll(".lock").forEach(b=>b.setAttribute("aria-pressed",String(LOCK[+b.dataset.lock])));
+  document.querySelectorAll(".step button").forEach(b=>b.disabled=LOCK[+b.dataset.ax]);
+  $("sentence").textContent=describe(o);
+  document.querySelectorAll("#lens button").forEach(el=>
+    el.setAttribute("aria-pressed",String(+el.dataset.f===S.f)));
+  document.querySelectorAll("#objs button").forEach(el=>
+    el.setAttribute("aria-pressed",String(el.dataset.o===S.obj)));
+}
+
+/* ---------- input ---------- */
+const snap=(v,s)=>Math.round(v/s)*s;
+// orbit input still snaps to 15°, so dragging lands on the clean stock angles
+function setSph(az,el,d){
+  setP(camPos(((snap(az,15)%360)+360)%360, Math.max(-90,Math.min(90,snap(el,15))), d));
+}
+function setAxis(i,dir){
+  if(LOCK[i])return;
+  const p=S.p.slice();p[i]=snap(p[i]+dir*0.5,0.5);setP(p);
+}
+function setD(v){
+  const o=OBJECTS[S.obj];
+  const d=Math.max(o.dmin,Math.min(o.dmax,snap(v,0.5)));
+  const cur=Math.hypot(S.p[0],S.p[1],S.p[2]);
+  setP(cur>1e-6 ? scl(S.p,d/cur) : [0,0,d]);
+}
+function pickObject(k){
+  const az=S.az,el=S.el,o=OBJECTS[k];
+  S.obj=k;distEl.min=o.dmin;distEl.max=o.dmax;distEl.value=o.d0;
+  S.p=camPos(az,el,o.d0);
+  render();
+}
+
+// chips
+$("objs").innerHTML=Object.entries(OBJECTS)
+  .map(([k,o])=>`<button data-o="${k}" aria-pressed="false">${o.label}</button>`).join("");
+$("objs").onclick=e=>{const b=e.target.closest("button");if(b)pickObject(b.dataset.o);};
+$("lens").innerHTML=LENSES.map(f=>`<button data-f="${f}" aria-pressed="false">${f}</button>`).join("");
+$("lens").onclick=e=>{const b=e.target.closest("button");if(b){S.f=+b.dataset.f;render();}};
+document.querySelectorAll(".lock").forEach(b=>b.onclick=()=>toggleLock(+b.dataset.lock));
+
+document.querySelectorAll(".step button").forEach(b=>b.onclick=()=>{
+  const i=+b.dataset.ax, dir=+b.dataset.d;
+  setAxis(i, i===0 ? -dir : dir);   // world +X is the subject's left, so the X button flips
+});
+distEl.oninput=()=>setD(+distEl.value);
+$("reset").onclick=()=>{S.az=45;S.el=30;S.f=50;pickObject(S.obj);};
+
+// drag / wheel / keys on both canvases
+for(const cv of [rigCv,camCv]){
+  let drag=null;
+  cv.addEventListener("pointerdown",e=>{
+    cv.setPointerCapture(e.pointerId);
+    if(cv===rigCv){
+      const r=cv.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;
+      for(const A of AXES){
+        if(Math.hypot(px-A.b[0],py-A.b[1])<15){toggleLock(A.comp);drag=null;return;}
+      }
+      const A=nearestAxis(px,py);
+      if(A){drag={axis:A,x:e.clientX,y:e.clientY,start:S.p.slice()};return;}
+    }
+    drag={x:e.clientX,y:e.clientY,az:snap(S.az,15),el:snap(S.el,15)};
+  });
+  cv.addEventListener("pointermove",e=>{
+    if(!drag){
+      if(cv===rigCv){
+        const r=cv.getBoundingClientRect();
+        const A=nearestAxis(e.clientX-r.left,e.clientY-r.top);
+        cv.style.cursor=A?"move":"";
+        const h=A?A.comp:null;
+        if(h!==hoverAx){hoverAx=h;render();}
+      }
+      return;
+    }
+    if(drag.axis){
+      const A=drag.axis,vx=A.b[0]-A.a[0],vy=A.b[1]-A.a[1],len=Math.hypot(vx,vy);
+      // pointer travel projected onto the axis, converted back to world units
+      const along=((e.clientX-drag.x)*vx+(e.clientY-drag.y)*vy)/len*(2*A.L/len);
+      const p=drag.start.slice();
+      p[A.comp]=snap(drag.start[A.comp]+A.sign*along,0.5);
+      setP(p);
+      return;
+    }
+    setSph(drag.az+(e.clientX-drag.x)*0.45, drag.el-(e.clientY-drag.y)*0.45, S.d);
+  });
+  const end=()=>{drag=null;};
+  cv.addEventListener("pointerleave",()=>{if(hoverAx!==null){hoverAx=null;render();}});
+  cv.addEventListener("pointerup",end);
+  cv.addEventListener("pointercancel",end);
+  cv.addEventListener("wheel",e=>{e.preventDefault();setD(S.d+Math.sign(e.deltaY)*0.5);},{passive:false});
+  cv.addEventListener("keydown",e=>{
+    const k=e.key;
+    const a=snap(S.az,15), e2=snap(S.el,15);
+    if(k==="ArrowLeft")setSph(a-15,e2,S.d); else if(k==="ArrowRight")setSph(a+15,e2,S.d);
+    else if(k==="ArrowUp")setSph(a,e2+15,S.d); else if(k==="ArrowDown")setSph(a,e2-15,S.d);
+    else if(k==="+"||k==="=")setD(S.d-0.5); else if(k==="-"||k==="_")setD(S.d+0.5);
+    else return;
+    e.preventDefault();
+  });
+}
+
+$("copy").onclick=async()=>{
+  const btn=$("copy"),txt=$("sentence").textContent;
+  try{await navigator.clipboard.writeText(txt);btn.textContent="Copied";btn.dataset.done="1";}
+  catch{
+    const r=document.createRange();r.selectNodeContents($("sentence"));
+    const s=getSelection();s.removeAllRanges();s.addRange(r);
+    btn.textContent="Press ⌘C";btn.dataset.done="1";
+  }
+  setTimeout(()=>{btn.textContent="Copy";delete btn.dataset.done;},1500);
+};
+
+new ResizeObserver(render).observe(document.querySelector(".stage"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+document.fonts&&document.fonts.ready.then(render);
+pickObject("cube");
+</script>
