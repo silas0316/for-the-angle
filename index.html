@@ -82,6 +82,17 @@ h1{
   padding:7px 11px;border-radius:2px;cursor:pointer;
 }
 .reset:hover{border-color:var(--ink-3);color:var(--ink)}
+.acts{display:flex;align-items:center;gap:8px}
+.langsel{
+  font:500 11.5px/1 "IBM Plex Mono",ui-monospace,monospace;
+  background:var(--panel);border:1px solid var(--line);color:var(--ink-2);
+  padding:7px 26px 7px 10px;border-radius:2px;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 14px) 52%,calc(100% - 9px) 52%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+}
+.langsel:hover{border-color:var(--ink-3);color:var(--ink)}
 
 /* ---- subject chips ---- */
 .objs{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--panel);width:fit-content}
@@ -194,10 +205,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>Camera Angle Rig</h1>
-      <p class="sub">Move the camera by X / Y / Z or drag to orbit · copy the sentence</p>
+      <h1>For the Angle</h1>
+      <p class="sub" id="sub">Move the camera by X / Y / Z or drag to orbit · copy the sentence</p>
     </div>
-    <button class="reset" id="reset">Reset</button>
+    <div class="acts">
+      <select class="langsel" id="lang" aria-label="Language"></select>
+      <button class="reset" id="reset">Reset</button>
+    </div>
   </div>
 
   <nav class="objs" id="objs" aria-label="Subject"></nav>
@@ -205,19 +219,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   <div class="stage">
     <figure class="pane">
       <canvas id="rig" tabindex="0" aria-label="Rig view. Drag, or use arrow keys, to move the camera around the subject."></canvas>
-      <figcaption class="cap"><b>Rig</b><span id="capRig">az 45 · el 30</span></figcaption>
-      <span class="hint">drag a track to slide · click its letter to lock · drag empty space to orbit</span>
+      <figcaption class="cap"><b id="capRigLbl">Rig</b><span id="capRig">az 45 · el 30</span></figcaption>
+      <span class="hint" id="hintRig">drag a track to slide · click its letter to lock · drag empty space to orbit</span>
     </figure>
     <figure class="pane">
       <canvas id="cam" tabindex="0" aria-label="Camera view. Drag, or use arrow keys, to move the camera around the subject."></canvas>
       <div class="ticks"><i></i><i></i><i></i><i></i></div>
-      <figcaption class="cap"><b>Camera</b><span id="capCam">50mm</span></figcaption>
+      <figcaption class="cap"><b id="capCamLbl">Camera</b><span id="capCam">50mm</span></figcaption>
     </figure>
   </div>
 
   <div class="rack">
     <div class="row">
-      <span class="lbl">X <em>side</em></span>
+      <span class="lbl">X <em id="em-x">side</em></span>
       <div class="ctl">
       <div class="step">
         <button data-ax="0" data-d="-1" aria-label="Move camera toward the subject's left">−</button>
@@ -229,7 +243,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <span class="note" id="n-x"></span>
     </div>
     <div class="row">
-      <span class="lbl">Y <em>height</em></span>
+      <span class="lbl">Y <em id="em-y">height</em></span>
       <div class="ctl">
       <div class="step">
         <button data-ax="1" data-d="-1" aria-label="Lower camera">−</button>
@@ -241,7 +255,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <span class="note" id="n-y"></span>
     </div>
     <div class="row">
-      <span class="lbl">Z <em>depth</em></span>
+      <span class="lbl">Z <em id="em-z">depth</em></span>
       <div class="ctl">
       <div class="step">
         <button data-ax="2" data-d="-1" aria-label="Move camera behind the subject">−</button>
@@ -253,17 +267,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       <span class="note" id="n-z"></span>
     </div>
     <div class="row">
-      <label for="dist">Distance</label>
+      <label for="dist" id="lbl-dist">Distance</label>
       <input id="dist" type="range" min="1.5" max="10" step="0.5" value="3.5">
       <span class="note"><b id="v-d">3.5</b> <span id="n-d"></span></span>
     </div>
     <div class="row">
-      <span class="lbl">Lens</span>
+      <span class="lbl" id="lbl-lens">Lens</span>
       <div class="lens" id="lens"></div>
       <span class="note" id="n-f"></span>
     </div>
     <div class="row row--read">
-      <span class="lbl">Angle</span>
+      <span class="lbl" id="lbl-angle">Angle</span>
       <span class="read" id="v-ang">45° az · +30° el</span>
       <span class="note" id="n-ang"></span>
     </div>
@@ -271,13 +285,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
   <section class="out">
     <div class="out__head">
-      <span class="tag">Prompt text</span>
+      <span class="tag" id="tag">Prompt text</span>
       <button class="copy" id="copy">Copy</button>
     </div>
     <p id="sentence">&nbsp;</p>
   </section>
 
-  <p class="foot">Front of the subject faces the <b>FRONT</b> marker in the rig view. Left / right are the subject's own.</p>
+  <p class="foot" id="foot">Front of the subject faces the <b>FRONT</b> marker in the rig view. Left / right are the subject's own.</p>
 </div>
 
 <script>
@@ -586,82 +600,603 @@ function drawRig(o,lines,grid){
   if(fp){
     ctx.fillStyle=CSS("--ink-3");
     ctx.font=`500 ${10.5*dpr}px "IBM Plex Mono",monospace`;
-    ctx.fillText("FRONT",fp[0],fp[1]);
+    ctx.fillText(T().ui.front,fp[0],fp[1]);
   }
 }
 
-/* ---------- the sentence ---------- */
-function azText(a,subj){
-  const side=a<180?"right":"left", b=a<=180?a:360-a;
-  switch(b){
-    case 0:  return `Head-on frontal view of ${subj}`;
-    case 15: return `Near-frontal view of ${subj}, camera nudged slightly to its ${side}`;
-    case 30: return `Shallow three-quarter view from ${subj}'s front-${side}`;
-    case 45: return `Classic three-quarter view from ${subj}'s front-${side}`;
-    case 60: return `Wide three-quarter view from ${subj}'s front-${side}, side dominant`;
-    case 75: return `Near-profile view from ${subj}'s ${side}, front barely visible`;
-    case 90: return `Full side profile from ${subj}'s ${side}`;
-    case 105:return `Just past profile — ${subj}'s ${side} side and a hint of the back`;
-    case 120:return `Rear three-quarter view from ${subj}'s ${side}`;
-    case 135:return `Classic rear three-quarter view from ${subj}'s back-${side}`;
-    case 150:return `Mostly rear view, offset toward ${subj}'s ${side}`;
-    case 165:return `Near-rear view, camera barely off centre to the ${side}`;
-    default: return `Directly behind ${subj}`;
-  }
+/* ---------- languages ---------- */
+// {s} = subject noun, {d} = side word, {g} = generic "subject", {w} = wall, {f} = FRONT marker.
+// The elevation clause never names the subject, which keeps case/gender agreement
+// tractable in German, Russian and the Romance languages.
+const LANGS={
+en:{name:"English",code:"en",sep:", ",end:".",gen:"the subject",
+ label:{cube:"Cube",sphere:"Sphere",phone:"Phone",laptop:"Laptop",human:"Human",car:"Car",room:"Room"},
+ subj:{cube:"the cube",sphere:"the sphere",phone:"the phone",laptop:"the laptop",human:"the figure",car:"the car",room:"the room"},
+ side:{r:"right",l:"left"},
+ az:{0:"Head-on frontal view of {s}",
+  15:"Near-frontal view of {s}, camera nudged slightly to the {d}",
+  30:"Shallow three-quarter view of {s} from the front-{d}",
+  45:"Classic three-quarter view of {s} from the front-{d}",
+  60:"Wide three-quarter view of {s} from the front-{d}, side dominant",
+  75:"Near-profile view of {s} from the {d}, front barely visible",
+  90:"Full side profile of {s} from the {d}",
+  105:"Just past profile — the {d} side of {s} and a hint of the back",
+  120:"Rear three-quarter view of {s} from the {d}",
+  135:"Classic rear three-quarter view of {s} from the back-{d}",
+  150:"Mostly rear view of {s}, offset toward the {d}",
+  165:"Near-rear view of {s}, camera barely off centre to the {d}",
+  180:"Directly behind {s}"},
+ el:{90:"shot from directly overhead, looking straight down",75:"steep overhead angle looking down",
+  60:"high angle, camera well above and looking down",45:"elevated camera looking down",
+  30:"moderately elevated camera looking downward",15:"camera just above eye level, angled gently down",
+  0:"camera at eye level",'-15':"camera just below, angled gently up",
+  '-30':"low angle, camera below and looking up",'-45':"strong low angle looking up",
+  '-60':"very low angle, close to the ground looking up",'-75':"extreme worm's-eye angle from near ground level",
+  '-90':"shot from directly underneath, looking straight up"},
+ shot:[["extreme close-up","extreme close-up, {g} overflowing the frame"],
+  ["close-up","tight close-up, {g} filling the frame"],
+  ["medium close-up","close framing, {g} dominating the frame"],
+  ["medium shot","medium shot at moderate distance"],
+  ["medium-wide","medium-wide shot with clear space around {g}"],
+  ["wide shot","wide shot, {g} small within the frame"],
+  ["very wide","very wide establishing shot, {g} distant in the frame"]],
+ lens:{18:"ultra-wide 18mm perspective, strong distortion at the edges",24:"wide 24mm lens with pronounced perspective",
+  35:"mild wide-angle 35mm perspective",50:"neutral 50mm perspective",
+  85:"85mm short telephoto, gently compressed perspective",135:"135mm telephoto, strongly compressed perspective",
+  200:"200mm long telephoto, heavily flattened perspective"},
+ walls:["front wall","front-right corner","right wall","back-right corner","back wall","back-left corner","left wall","front-left corner"],
+ pole:{up:"Top-down bird's-eye view directly above {s}, looking straight down",
+  down:"Extreme upward view from directly beneath {s}, looking straight up",
+  tail:"its front pointing toward the top of the frame"},
+ interior:"Interior view from inside the room, camera near the {w} looking across the space",
+ ui:{sub:"Move the camera by X / Y / Z or drag to orbit · copy the sentence",reset:"Reset",rig:"Rig",cam:"Camera",
+  hint:"drag a track to slide · click its letter to lock · drag empty space to orbit",
+  x:"X",xe:"side",y:"Y",ye:"height",z:"Z",ze:"depth",dist:"Distance",lens:"Lens",angle:"Angle",lock:"Lock",
+  prompt:"Prompt text",copy:"Copy",copied:"Copied",cfail:"Press ⌘C",front:"FRONT",
+  foot:"Front of the subject faces the {f} marker in the rig view. Left / right are the subject's own.",
+  azAb:"az",elAb:"el",nCentred:"centred",nSide:"to the {d} of {s}",nAtH:"at subject height",nAbove:"above centre",
+  nBelow:"below centre",nBeside:"beside the subject",nFront:"in front",nBehind:"behind",nInside:"inside",
+  aHead:"head-on",aBehind:"behind",aProfile:"{d} profile",aFrontS:"front-{d}",aRearS:"rear-{d}",aOver:"overhead",
+  eHigh:"high angle",eAbove:"above eye level",eEye:"eye level",eBelow:"below eye level",eLow:"low angle",
+  lWide:"wide",lMild:"mild wide",lNeutral:"neutral",lShort:"short tele",lTele:"telephoto",
+  arRig:"Rig view. Drag, or use arrow keys, to move the camera around the subject.",arCam:"Camera view.",
+  arLock:"Lock the {a} axis",arMinus:"decrease",arPlus:"increase",arLang:"Language"}},
+
+zh:{name:"繁體中文",code:"zh-Hant",sep:"，",end:"。",gen:"主體",
+ label:{cube:"立方體",sphere:"球體",phone:"手機",laptop:"筆電",human:"人物",car:"汽車",room:"房間"},
+ subj:{cube:"立方體",sphere:"球體",phone:"手機",laptop:"筆記型電腦",human:"人物",car:"汽車",room:"房間"},
+ side:{r:"右",l:"左"},
+ az:{0:"{s}的正面視角，完全正對鏡頭",
+  15:"{s}的近正面視角，鏡頭略偏向其{d}側",
+  30:"{s}的淺四分之三側面視角，來自前{d}方",
+  45:"{s}的經典四分之三側面視角，來自前{d}方",
+  60:"{s}的大角度四分之三視角，來自前{d}方，側面為主",
+  75:"{s}的近側面視角，來自{d}側，正面幾乎不可見",
+  90:"{s}的完整側面視角，來自正{d}方",
+  105:"略過側面：可見{s}的{d}側與一點背面",
+  120:"{s}的背側四分之三視角，來自{d}後方",
+  135:"{s}的經典背面四分之三視角，來自後{d}方",
+  150:"{s}以背面為主的視角，略偏向{d}側",
+  165:"{s}的近背面視角，鏡頭僅略偏{d}側",
+  180:"從{s}的正後方拍攝"},
+ el:{90:"完全俯視，鏡頭在正上方垂直向下拍攝",75:"大幅俯視角度，由高處向下拍攝",
+  60:"高角度俯拍，鏡頭遠高於主體向下拍攝",45:"鏡頭抬高，明顯向下俯拍",
+  30:"鏡頭略為抬高，適度向下俯拍",15:"鏡頭略高於視平線，輕微向下傾斜",
+  0:"鏡頭與主體齊平，位於視平線高度",'-15':"鏡頭略低於主體，輕微向上仰拍",
+  '-30':"低角度仰拍，鏡頭位於主體下方向上拍攝",'-45':"大幅低角度仰拍",
+  '-60':"極低角度仰拍，鏡頭貼近地面向上拍攝",'-75':"極端蟲視角度，幾乎貼地向上拍攝",
+  '-90':"完全仰視，鏡頭在正下方垂直向上拍攝"},
+ shot:[["極特寫","極特寫，{g}滿溢出畫面"],
+  ["特寫","緊湊特寫，{g}充滿整個畫面"],
+  ["中特寫","近距離構圖，{g}主導畫面"],
+  ["中景","中景，距離適中"],
+  ["中遠景","中遠景，{g}周圍留有明顯空間"],
+  ["遠景","遠景，{g}在畫面中顯得較小"],
+  ["大遠景","大遠景定場鏡頭，{g}在畫面中相當遙遠"]],
+ lens:{18:"18mm 超廣角透視，邊緣變形明顯",24:"24mm 廣角鏡頭，透視感強烈",
+  35:"35mm 輕微廣角透視",50:"50mm 標準鏡頭，透視自然",
+  85:"85mm 中長焦，透視略帶壓縮感",135:"135mm 長焦鏡頭，透視壓縮強烈",
+  200:"200mm 超長焦，空間感高度壓平"},
+ walls:["前牆","前右角落","右牆","後右角落","後牆","後左角落","左牆","前左角落"],
+ pole:{up:"正上方俯瞰視角，鏡頭在{s}正上方垂直向下拍攝",
+  down:"正下方仰視視角，鏡頭在{s}正下方垂直向上拍攝",
+  tail:"主體正面朝向畫面上方"},
+ interior:"室內視角，鏡頭位於房間內部靠近{w}處，橫越空間拍攝",
+ ui:{sub:"以 X / Y / Z 移動鏡頭，或拖曳環繞 · 複製描述句",reset:"重設",rig:"機位",cam:"鏡頭",
+  hint:"拖曳軸線可滑動 · 點擊字母可鎖定 · 拖曳空白處可環繞",
+  x:"X",xe:"左右",y:"Y",ze:"前後",ye:"高度",z:"Z",dist:"距離",lens:"鏡頭",angle:"角度",lock:"鎖定",
+  prompt:"提示詞",copy:"複製",copied:"已複製",cfail:"請按 ⌘C",front:"正面",
+  foot:"主體正面朝向機位視圖中的 {f} 標記。左右方向以主體本身為準。",
+  azAb:"方位",elAb:"仰角",nCentred:"置中",nSide:"位於{s}的{d}側",nAtH:"與主體同高",nAbove:"高於中心",
+  nBelow:"低於中心",nBeside:"位於主體側面",nFront:"位於前方",nBehind:"位於後方",nInside:"室內",
+  aHead:"正面",aBehind:"背面",aProfile:"{d}側面",aFrontS:"前{d}方",aRearS:"後{d}方",aOver:"正上方",
+  eHigh:"高角度",eAbove:"高於視平線",eEye:"視平線",eBelow:"低於視平線",eLow:"低角度",
+  lWide:"廣角",lMild:"輕廣角",lNeutral:"標準",lShort:"中長焦",lTele:"長焦",
+  arRig:"機位視圖。拖曳或使用方向鍵可移動鏡頭。",arCam:"鏡頭視圖。",
+  arLock:"鎖定 {a} 軸",arMinus:"減少",arPlus:"增加",arLang:"語言"}},
+
+ja:{name:"日本語",code:"ja",sep:"、",end:"。",gen:"被写体",
+ label:{cube:"立方体",sphere:"球体",phone:"スマホ",laptop:"ノートPC",human:"人物",car:"車",room:"部屋"},
+ subj:{cube:"立方体",sphere:"球体",phone:"スマートフォン",laptop:"ノートパソコン",human:"人物",car:"車",room:"部屋"},
+ side:{r:"右",l:"左"},
+ az:{0:"{s}を真正面から捉えたフロントビュー",
+  15:"{s}のほぼ正面からのビュー、カメラをわずかに{d}へ振った構図",
+  30:"{s}を斜め前{d}から捉えた浅めの4分の3ビュー",
+  45:"{s}を斜め前{d}から捉えた王道の4分の3ビュー",
+  60:"{s}を前{d}寄りから捉えた広めの4分の3ビュー、側面が主体",
+  75:"{s}を{d}側から捉えたほぼ真横のビュー、正面はほとんど見えない",
+  90:"{s}を{d}側から捉えた完全な真横のプロフィールビュー",
+  105:"真横をやや過ぎた角度、{s}の{d}側面と背面がわずかに見える",
+  120:"{s}を{d}後方から捉えたリア4分の3ビュー",
+  135:"{s}を斜め後ろ{d}から捉えた王道のリア4分の3ビュー",
+  150:"{s}をほぼ背面から捉えたビュー、{d}側にわずかにずれた構図",
+  165:"{s}のほぼ真後ろからのビュー、カメラは{d}へごくわずかにずれている",
+  180:"{s}を真後ろから捉えたリアビュー"},
+ el:{90:"真上からの俯瞰、垂直に見下ろした構図",75:"かなり高い位置からの急な俯瞰",
+  60:"ハイアングル、被写体のかなり上方から見下ろす",45:"やや高い位置から見下ろすハイアングル",
+  30:"わずかに高い位置から緩やかに見下ろす角度",15:"目線よりやや高い位置から軽く見下ろす角度",
+  0:"目線の高さに構えた水平アングル",'-15':"目線よりやや低い位置から軽く見上げる角度",
+  '-30':"ローアングル、被写体の下方から見上げる",'-45':"強いローアングルからのあおり",
+  '-60':"地面すれすれの非常に低いローアングル",'-75':"極端な虫の目アングル、ほぼ地面の高さから",
+  '-90':"真下からの見上げ、垂直に見上げた構図"},
+ shot:[["特大アップ","極端なクローズアップ、{g}が画面からはみ出す"],
+  ["クローズアップ","タイトなクローズアップ、{g}が画面いっぱいに入る"],
+  ["ミディアムアップ","寄りの構図、{g}が画面を大きく占める"],
+  ["ミディアム","ほどよい距離のミディアムショット"],
+  ["ミディアムロング","ミディアムロング、{g}の周囲に余白のある構図"],
+  ["ロング","ロングショット、{g}は画面の中で小さめ"],
+  ["エクストリームロング","引きの強い状況説明ショット、{g}は画面の中で遠い"]],
+ lens:{18:"18mm超広角のパース、周辺の歪みが強い",24:"24mm広角レンズ、パースが強調される",
+  35:"35mmの軽い広角パース",50:"50mm標準レンズの自然なパース",
+  85:"85mm中望遠、やや圧縮されたパース",135:"135mm望遠、圧縮効果の強いパース",
+  200:"200mm超望遠、奥行きが大きく圧縮されたパース"},
+ walls:["前の壁","前右の角","右の壁","後右の角","後ろの壁","後左の角","左の壁","前左の角"],
+ pole:{up:"{s}の真上からの俯瞰、垂直に見下ろした構図",
+  down:"{s}の真下からの見上げ、垂直に見上げた構図",
+  tail:"被写体の正面が画面の上を向いている"},
+ interior:"室内からのビュー、カメラは部屋の{w}付近に置かれ空間を横切って捉える",
+ ui:{sub:"X / Y / Z でカメラを移動、またはドラッグで周回 · 文をコピー",reset:"リセット",rig:"リグ",cam:"カメラ",
+  hint:"軸をドラッグで移動 · 文字をクリックでロック · 空白をドラッグで周回",
+  x:"X",xe:"左右",y:"Y",ye:"高さ",z:"Z",ze:"前後",dist:"距離",lens:"レンズ",angle:"アングル",lock:"ロック",
+  prompt:"プロンプト",copy:"コピー",copied:"コピー済",cfail:"⌘C を押す",front:"正面",
+  foot:"被写体の正面はリグビューの {f} マーカーの方を向いています。左右は被写体から見た方向です。",
+  azAb:"方位",elAb:"仰角",nCentred:"中央",nSide:"{s}の{d}側",nAtH:"被写体と同じ高さ",nAbove:"中心より上",
+  nBelow:"中心より下",nBeside:"被写体の横",nFront:"前方",nBehind:"後方",nInside:"室内",
+  aHead:"正面",aBehind:"背面",aProfile:"{d}の真横",aFrontS:"前{d}",aRearS:"後{d}",aOver:"真上",
+  eHigh:"ハイアングル",eAbove:"目線より上",eEye:"目線の高さ",eBelow:"目線より下",eLow:"ローアングル",
+  lWide:"広角",lMild:"やや広角",lNeutral:"標準",lShort:"中望遠",lTele:"望遠",
+  arRig:"リグビュー。ドラッグまたは矢印キーでカメラを移動します。",arCam:"カメラビュー。",
+  arLock:"{a} 軸をロック",arMinus:"減らす",arPlus:"増やす",arLang:"言語"}},
+ko:{name:"한국어",code:"ko",sep:", ",end:".",gen:"피사체",
+ label:{cube:"정육면체",sphere:"구",phone:"스마트폰",laptop:"노트북",human:"인물",car:"자동차",room:"방"},
+ subj:{cube:"정육면체",sphere:"구체",phone:"스마트폰",laptop:"노트북",human:"인물",car:"자동차",room:"방"},
+ side:{r:"오른쪽",l:"왼쪽"},
+ az:{0:"{s}의 정면 뷰, 정면에서 똑바로 바라본 각도",
+  15:"{s}의 거의 정면 뷰, 카메라가 {d}으로 약간 치우침",
+  30:"{s}의 얕은 3/4 측면 뷰, 앞{d} 방향에서 촬영",
+  45:"{s}의 정석적인 3/4 측면 뷰, 앞{d} 방향에서 촬영",
+  60:"{s}의 넓은 3/4 뷰, 앞{d} 방향에서 촬영, 측면이 지배적",
+  75:"{s}의 거의 측면 뷰, {d}에서 촬영, 정면은 거의 보이지 않음",
+  90:"{s}의 완전한 측면 프로필 뷰, {d}에서 촬영",
+  105:"측면을 살짝 지난 각도, {s}의 {d} 면과 뒷면이 약간 보임",
+  120:"{s}의 후면 3/4 뷰, {d} 뒤쪽에서 촬영",
+  135:"{s}의 정석적인 후면 3/4 뷰, 뒤{d} 방향에서 촬영",
+  150:"{s}의 대체로 후면 뷰, {d}으로 약간 치우침",
+  165:"{s}의 거의 후면 뷰, 카메라가 {d}으로 아주 조금 벗어남",
+  180:"{s}의 정후방에서 촬영"},
+ el:{90:"바로 위에서 수직으로 내려다본 부감",75:"매우 높은 위치에서 가파르게 내려다본 각도",
+  60:"하이앵글, 피사체보다 훨씬 높은 곳에서 내려다봄",45:"높인 카메라로 내려다보는 각도",
+  30:"약간 높인 카메라로 완만하게 내려다보는 각도",15:"눈높이보다 살짝 높은 위치에서 가볍게 내려다봄",
+  0:"눈높이에 맞춘 수평 앵글",'-15':"눈높이보다 살짝 낮은 위치에서 가볍게 올려다봄",
+  '-30':"로우앵글, 피사체 아래에서 올려다봄",'-45':"강한 로우앵글로 올려다봄",
+  '-60':"지면에 가까운 매우 낮은 앵글",'-75':"지면 높이에 가까운 극단적인 개구리 시점",
+  '-90':"바로 아래에서 수직으로 올려다본 앙각"},
+ shot:[["익스트림 클로즈업","익스트림 클로즈업, {g}가 화면 밖으로 넘침"],
+  ["클로즈업","타이트한 클로즈업, {g}가 화면을 가득 채움"],
+  ["미디엄 클로즈업","가까운 구도, {g}가 화면을 크게 차지함"],
+  ["미디엄 샷","적당한 거리의 미디엄 샷"],
+  ["미디엄 와이드","미디엄 와이드 샷, {g} 주변에 여백이 있음"],
+  ["와이드 샷","와이드 샷, {g}가 화면에서 작게 보임"],
+  ["익스트림 와이드","익스트림 와이드 설정 샷, {g}가 화면에서 멀리 보임"]],
+ lens:{18:"18mm 초광각 원근감, 가장자리 왜곡이 강함",24:"24mm 광각 렌즈, 원근감이 뚜렷함",
+  35:"35mm 약한 광각 원근감",50:"50mm 표준 렌즈의 자연스러운 원근감",
+  85:"85mm 준망원, 원근감이 부드럽게 압축됨",135:"135mm 망원, 원근감이 강하게 압축됨",
+  200:"200mm 초망원, 원근감이 크게 평면화됨"},
+ walls:["앞쪽 벽","앞오른쪽 모서리","오른쪽 벽","뒤오른쪽 모서리","뒤쪽 벽","뒤왼쪽 모서리","왼쪽 벽","앞왼쪽 모서리"],
+ pole:{up:"{s} 바로 위에서 수직으로 내려다본 조감 뷰",
+  down:"{s} 바로 아래에서 수직으로 올려다본 뷰",
+  tail:"피사체의 정면이 화면 위쪽을 향함"},
+ interior:"실내 뷰, 카메라가 방 안 {w} 근처에서 공간을 가로질러 바라봄",
+ ui:{sub:"X / Y / Z로 카메라 이동, 또는 드래그로 궤도 회전 · 문장 복사",reset:"초기화",rig:"리그",cam:"카메라",
+  hint:"축을 드래그해 이동 · 글자를 클릭해 잠금 · 빈 공간을 드래그해 회전",
+  x:"X",xe:"좌우",y:"Y",ye:"높이",z:"Z",ze:"앞뒤",dist:"거리",lens:"렌즈",angle:"각도",lock:"잠금",
+  prompt:"프롬프트",copy:"복사",copied:"복사됨",cfail:"⌘C 누르기",front:"정면",
+  foot:"피사체의 정면은 리그 뷰의 {f} 표시를 향합니다. 좌우는 피사체 기준입니다.",
+  azAb:"방위",elAb:"고도",nCentred:"중앙",nSide:"{s}의 {d}",nAtH:"피사체와 같은 높이",nAbove:"중심보다 위",
+  nBelow:"중심보다 아래",nBeside:"피사체 옆",nFront:"앞쪽",nBehind:"뒤쪽",nInside:"실내",
+  aHead:"정면",aBehind:"후면",aProfile:"{d} 측면",aFrontS:"앞{d}",aRearS:"뒤{d}",aOver:"바로 위",
+  eHigh:"하이앵글",eAbove:"눈높이 위",eEye:"눈높이",eBelow:"눈높이 아래",eLow:"로우앵글",
+  lWide:"광각",lMild:"약광각",lNeutral:"표준",lShort:"준망원",lTele:"망원",
+  arRig:"리그 뷰. 드래그하거나 방향키로 카메라를 이동합니다.",arCam:"카메라 뷰.",
+  arLock:"{a}축 잠금",arMinus:"감소",arPlus:"증가",arLang:"언어"}},
+
+es:{name:"Español",code:"es",sep:", ",end:".",gen:"el sujeto",
+ label:{cube:"Cubo",sphere:"Esfera",phone:"Móvil",laptop:"Portátil",human:"Figura",car:"Coche",room:"Sala"},
+ subj:{cube:"del cubo",sphere:"de la esfera",phone:"del móvil",laptop:"del portátil",human:"de la figura",car:"del coche",room:"de la sala"},
+ side:{r:"derecha",l:"izquierda"},
+ az:{0:"Vista frontal directa {s}",
+  15:"Vista casi frontal {s}, con la cámara ligeramente desplazada hacia la {d}",
+  30:"Vista de tres cuartos abierta {s}, desde delante y hacia la {d}",
+  45:"Vista clásica de tres cuartos {s}, desde delante y hacia la {d}",
+  60:"Vista de tres cuartos cerrada {s} desde delante y hacia la {d}, con el lateral dominante",
+  75:"Vista casi de perfil {s} desde la {d}, con el frente apenas visible",
+  90:"Perfil lateral completo {s} desde la {d}",
+  105:"Justo pasado el perfil: se ve la {d} {s} y algo de la parte trasera",
+  120:"Vista trasera de tres cuartos {s} desde la {d}",
+  135:"Vista trasera clásica de tres cuartos {s}, desde detrás y hacia la {d}",
+  150:"Vista mayormente trasera {s}, desplazada hacia la {d}",
+  165:"Vista casi trasera {s}, con la cámara apenas descentrada hacia la {d}",
+  180:"Directamente detrás {s}"},
+ el:{90:"tomada desde arriba en vertical, mirando directamente hacia abajo",75:"picado muy pronunciado desde lo alto",
+  60:"picado marcado, cámara muy por encima mirando hacia abajo",45:"cámara elevada mirando hacia abajo",
+  30:"cámara moderadamente elevada, ligeramente en picado",15:"cámara justo por encima del nivel de los ojos, apenas inclinada hacia abajo",
+  0:"cámara a la altura de los ojos",'-15':"cámara justo por debajo, apenas inclinada hacia arriba",
+  '-30':"contrapicado suave, cámara por debajo mirando hacia arriba",'-45':"contrapicado marcado mirando hacia arriba",
+  '-60':"contrapicado muy pronunciado, cerca del suelo",'-75':"ángulo extremo a ras de suelo, casi desde el nivel del piso",
+  '-90':"tomada desde abajo en vertical, mirando directamente hacia arriba"},
+ shot:[["primerísimo primer plano","primerísimo primer plano, {g} desborda el encuadre"],
+  ["primer plano","primer plano cerrado, {g} llena el encuadre"],
+  ["plano medio corto","encuadre cercano, {g} domina el cuadro"],
+  ["plano medio","plano medio a distancia moderada"],
+  ["plano medio largo","plano medio largo con espacio libre alrededor de {g}"],
+  ["plano general","plano general, {g} se ve pequeño en el encuadre"],
+  ["gran plano general","gran plano general de situación, {g} queda lejos en el encuadre"]],
+ lens:{18:"perspectiva ultra gran angular de 18 mm, con fuerte distorsión en los bordes",24:"objetivo gran angular de 24 mm con perspectiva pronunciada",
+  35:"perspectiva de gran angular suave de 35 mm",50:"perspectiva neutra de 50 mm",
+  85:"teleobjetivo corto de 85 mm, perspectiva ligeramente comprimida",135:"teleobjetivo de 135 mm, perspectiva muy comprimida",
+  200:"teleobjetivo largo de 200 mm, perspectiva fuertemente aplanada"},
+ walls:["pared frontal","esquina frontal derecha","pared derecha","esquina trasera derecha","pared trasera","esquina trasera izquierda","pared izquierda","esquina frontal izquierda"],
+ pole:{up:"Vista cenital directamente encima {s}, mirando en vertical hacia abajo",
+  down:"Vista nadir directamente debajo {s}, mirando en vertical hacia arriba",
+  tail:"con el frente del sujeto apuntando hacia la parte superior del encuadre"},
+ interior:"Vista interior desde dentro de la sala, con la cámara junto a la {w} mirando a través del espacio",
+ ui:{sub:"Mueve la cámara con X / Y / Z o arrastra para orbitar · copia la frase",reset:"Reiniciar",rig:"Plató",cam:"Cámara",
+  hint:"arrastra un eje para deslizar · pulsa su letra para bloquear · arrastra el vacío para orbitar",
+  x:"X",xe:"lateral",y:"Y",ye:"altura",z:"Z",ze:"fondo",dist:"Distancia",lens:"Objetivo",angle:"Ángulo",lock:"Fijar",
+  prompt:"Texto del prompt",copy:"Copiar",copied:"Copiado",cfail:"Pulsa ⌘C",front:"FRENTE",
+  foot:"El frente del sujeto mira hacia la marca {f} en la vista de plató. Izquierda / derecha son las del propio sujeto.",
+  azAb:"az",elAb:"el",nCentred:"centrada",nSide:"a la {d} {s}",nAtH:"a la altura del sujeto",nAbove:"por encima del centro",
+  nBelow:"por debajo del centro",nBeside:"al lado del sujeto",nFront:"delante",nBehind:"detrás",nInside:"interior",
+  aHead:"frontal",aBehind:"trasera",aProfile:"perfil {d}",aFrontS:"frontal {d}",aRearS:"trasera {d}",aOver:"cenital",
+  eHigh:"picado",eAbove:"sobre los ojos",eEye:"altura de los ojos",eBelow:"bajo los ojos",eLow:"contrapicado",
+  lWide:"angular",lMild:"angular suave",lNeutral:"neutro",lShort:"tele corto",lTele:"teleobjetivo",
+  arRig:"Vista de plató. Arrastra o usa las flechas para mover la cámara.",arCam:"Vista de cámara.",
+  arLock:"Fijar el eje {a}",arMinus:"disminuir",arPlus:"aumentar",arLang:"Idioma"}},
+fr:{name:"Français",code:"fr",sep:", ",end:".",gen:"le sujet",
+ label:{cube:"Cube",sphere:"Sphère",phone:"Téléphone",laptop:"Portable",human:"Personnage",car:"Voiture",room:"Pièce"},
+ subj:{cube:"du cube",sphere:"de la sphère",phone:"du téléphone",laptop:"de l'ordinateur portable",human:"du personnage",car:"de la voiture",room:"de la pièce"},
+ side:{r:"droite",l:"gauche"},
+ az:{0:"Vue de face directe {s}",
+  15:"Vue presque de face {s}, caméra légèrement décalée vers la {d}",
+  30:"Vue de trois quarts ouverte {s}, depuis l'avant vers la {d}",
+  45:"Vue de trois quarts classique {s}, depuis l'avant vers la {d}",
+  60:"Vue de trois quarts fermée {s} depuis l'avant vers la {d}, le flanc dominant",
+  75:"Vue presque de profil {s} depuis la {d}, l'avant à peine visible",
+  90:"Profil latéral complet {s} depuis la {d}",
+  105:"Juste au-delà du profil : on aperçoit le flanc {s} à {d} et un peu de l'arrière",
+  120:"Vue arrière de trois quarts {s} depuis la {d}",
+  135:"Vue arrière de trois quarts classique {s}, depuis l'arrière vers la {d}",
+  150:"Vue essentiellement arrière {s}, décalée vers la {d}",
+  165:"Vue presque arrière {s}, caméra à peine décentrée vers la {d}",
+  180:"Vue arrière directe {s}"},
+ el:{90:"prise à la verticale depuis le dessus, regard plongeant droit vers le bas",75:"plongée très marquée depuis le haut",
+  60:"forte plongée, caméra nettement au-dessus regardant vers le bas",45:"caméra surélevée en plongée",
+  30:"caméra modérément surélevée, légère plongée",15:"caméra juste au-dessus du niveau des yeux, légèrement inclinée vers le bas",
+  0:"caméra à hauteur des yeux",'-15':"caméra juste en dessous, légèrement inclinée vers le haut",
+  '-30':"contre-plongée douce, caméra en dessous regardant vers le haut",'-45':"contre-plongée marquée",
+  '-60':"contre-plongée très prononcée, près du sol",'-75':"angle extrême au ras du sol",
+  '-90':"prise à la verticale depuis le dessous, regard droit vers le haut"},
+ shot:[["très gros plan","très gros plan, {g} déborde du cadre"],
+  ["gros plan","gros plan serré, {g} remplit le cadre"],
+  ["plan rapproché","cadrage serré, {g} domine l'image"],
+  ["plan moyen","plan moyen à distance modérée"],
+  ["plan demi-ensemble","plan demi-ensemble avec de l'espace autour de {g}"],
+  ["plan large","plan large, {g} apparaît petit dans le cadre"],
+  ["plan très large","plan d'ensemble très large, {g} paraît lointain dans le cadre"]],
+ lens:{18:"perspective ultra grand-angle de 18 mm, forte distorsion sur les bords",24:"objectif grand-angle de 24 mm à perspective marquée",
+  35:"perspective légèrement grand-angle de 35 mm",50:"perspective neutre de 50 mm",
+  85:"courte focale télé de 85 mm, perspective légèrement comprimée",135:"téléobjectif de 135 mm, perspective fortement comprimée",
+  200:"téléobjectif long de 200 mm, perspective très aplatie"},
+ walls:["mur avant","coin avant droit","mur droit","coin arrière droit","mur arrière","coin arrière gauche","mur gauche","coin avant gauche"],
+ pole:{up:"Vue zénithale directement au-dessus {s}, regard vertical vers le bas",
+  down:"Vue en contre-plongée totale directement en dessous {s}, regard vertical vers le haut",
+  tail:"l'avant du sujet orienté vers le haut du cadre"},
+ interior:"Vue intérieure depuis l'intérieur de la pièce, caméra près du {w} balayant l'espace",
+ ui:{sub:"Déplacez la caméra en X / Y / Z ou faites glisser pour orbiter · copiez la phrase",reset:"Réinitialiser",rig:"Plateau",cam:"Caméra",
+  hint:"glissez un axe pour déplacer · cliquez sa lettre pour verrouiller · glissez le vide pour orbiter",
+  x:"X",xe:"latéral",y:"Y",ye:"hauteur",z:"Z",ze:"profondeur",dist:"Distance",lens:"Objectif",angle:"Angle",lock:"Bloquer",
+  prompt:"Texte du prompt",copy:"Copier",copied:"Copié",cfail:"Appuyez sur ⌘C",front:"AVANT",
+  foot:"L'avant du sujet est tourné vers le repère {f} dans la vue plateau. Gauche / droite sont celles du sujet.",
+  azAb:"az",elAb:"él",nCentred:"centrée",nSide:"à {d} {s}",nAtH:"à hauteur du sujet",nAbove:"au-dessus du centre",
+  nBelow:"en dessous du centre",nBeside:"à côté du sujet",nFront:"devant",nBehind:"derrière",nInside:"intérieur",
+  aHead:"de face",aBehind:"de dos",aProfile:"profil {d}",aFrontS:"avant {d}",aRearS:"arrière {d}",aOver:"zénithal",
+  eHigh:"plongée",eAbove:"au-dessus des yeux",eEye:"hauteur des yeux",eBelow:"sous les yeux",eLow:"contre-plongée",
+  lWide:"grand-angle",lMild:"légèrement large",lNeutral:"neutre",lShort:"télé court",lTele:"téléobjectif",
+  arRig:"Vue plateau. Faites glisser ou utilisez les flèches pour déplacer la caméra.",arCam:"Vue caméra.",
+  arLock:"Bloquer l'axe {a}",arMinus:"diminuer",arPlus:"augmenter",arLang:"Langue"}},
+
+de:{name:"Deutsch",code:"de",sep:", ",end:".",gen:"das Motiv",
+ label:{cube:"Würfel",sphere:"Kugel",phone:"Handy",laptop:"Laptop",human:"Figur",car:"Auto",room:"Raum"},
+ subj:{cube:"den Würfel",sphere:"die Kugel",phone:"das Handy",laptop:"den Laptop",human:"die Figur",car:"das Auto",room:"den Raum"},
+ side:{r:"rechts",l:"links"},
+ az:{0:"Frontale Ansicht direkt von vorne auf {s}",
+  15:"Nahezu frontale Ansicht auf {s}, Kamera leicht nach {d} versetzt",
+  30:"Flache Dreiviertelansicht auf {s} von schräg vorne {d}",
+  45:"Klassische Dreiviertelansicht auf {s} von schräg vorne {d}",
+  60:"Weite Dreiviertelansicht auf {s} von schräg vorne {d}, die Seite dominiert",
+  75:"Fast seitliche Ansicht auf {s} von {d}, die Front kaum sichtbar",
+  90:"Vollständige Seitenansicht im Profil auf {s} von {d}",
+  105:"Knapp hinter dem Profil: Blick von {d} auf {s} mit einem Hauch der Rückseite",
+  120:"Rückwärtige Dreiviertelansicht auf {s} von {d} hinten",
+  135:"Klassische rückwärtige Dreiviertelansicht auf {s} von schräg hinten {d}",
+  150:"Überwiegend rückwärtige Ansicht auf {s}, nach {d} versetzt",
+  165:"Fast rückwärtige Ansicht auf {s}, Kamera nur minimal nach {d} versetzt",
+  180:"Direkt von hinten auf {s}"},
+ el:{90:"senkrecht von oben aufgenommen, Blick gerade nach unten",75:"sehr steile Aufsicht von weit oben",
+  60:"starke Aufsicht, Kamera deutlich oberhalb mit Blick nach unten",45:"erhöhte Kamera mit Blick nach unten",
+  30:"mäßig erhöhte Kamera, leicht nach unten geneigt",15:"Kamera knapp über Augenhöhe, sanft nach unten geneigt",
+  0:"Kamera auf Augenhöhe",'-15':"Kamera knapp darunter, sanft nach oben geneigt",
+  '-30':"leichte Untersicht, Kamera darunter mit Blick nach oben",'-45':"ausgeprägte Untersicht mit Blick nach oben",
+  '-60':"sehr tiefe Untersicht, dicht über dem Boden",'-75':"extreme Froschperspektive knapp über Bodenhöhe",
+  '-90':"senkrecht von unten aufgenommen, Blick gerade nach oben"},
+ shot:[["Extreme Nahaufnahme","extreme Nahaufnahme, {g} sprengt den Bildrand"],
+  ["Nahaufnahme","enge Nahaufnahme, {g} füllt das Bild"],
+  ["Halbnah","nahes Bildformat, {g} beherrscht das Bild"],
+  ["Halbtotale","Halbtotale aus mittlerer Distanz"],
+  ["Weite Halbtotale","weite Halbtotale mit deutlichem Freiraum um {g}"],
+  ["Totale","Totale, {g} wirkt klein im Bild"],
+  ["Weite Totale","sehr weite Establishing-Totale, {g} liegt fern im Bild"]],
+ lens:{18:"18-mm-Ultraweitwinkel-Perspektive mit starker Verzeichnung am Rand",24:"24-mm-Weitwinkel mit ausgeprägter Perspektive",
+  35:"leicht weitwinklige 35-mm-Perspektive",50:"neutrale 50-mm-Perspektive",
+  85:"85-mm-Kurztele mit sanft komprimierter Perspektive",135:"135-mm-Tele mit stark komprimierter Perspektive",
+  200:"200-mm-Langtele mit stark abgeflachter Perspektive"},
+ walls:["Vorderwand","vorderen rechten Ecke","rechten Wand","hinteren rechten Ecke","Rückwand","hinteren linken Ecke","linken Wand","vorderen linken Ecke"],
+ pole:{up:"Vogelperspektive senkrecht von oben auf {s}, Blick senkrecht nach unten",
+  down:"Extreme Untersicht senkrecht von unten auf {s}, Blick senkrecht nach oben",
+  tail:"die Vorderseite des Motivs zeigt zum oberen Bildrand"},
+ interior:"Innenansicht aus dem Raum heraus, Kamera nahe der {w} mit Blick durch den Raum",
+ ui:{sub:"Kamera per X / Y / Z bewegen oder zum Umkreisen ziehen · Satz kopieren",reset:"Zurücksetzen",rig:"Rig",cam:"Kamera",
+  hint:"Achse ziehen zum Verschieben · Buchstaben klicken zum Sperren · Leerfläche ziehen zum Umkreisen",
+  x:"X",xe:"seitlich",y:"Y",ye:"Höhe",z:"Z",ze:"Tiefe",dist:"Distanz",lens:"Objektiv",angle:"Winkel",lock:"Sperren",
+  prompt:"Prompt-Text",copy:"Kopieren",copied:"Kopiert",cfail:"⌘C drücken",front:"VORNE",
+  foot:"Die Vorderseite des Motivs zeigt zur Markierung {f} in der Rig-Ansicht. Links / rechts gelten aus Sicht des Motivs.",
+  azAb:"Az",elAb:"El",nCentred:"mittig",nSide:"{d} vom Motiv",nAtH:"auf Motivhöhe",nAbove:"über der Mitte",
+  nBelow:"unter der Mitte",nBeside:"neben dem Motiv",nFront:"davor",nBehind:"dahinter",nInside:"innen",
+  aHead:"frontal",aBehind:"von hinten",aProfile:"Profil {d}",aFrontS:"vorne {d}",aRearS:"hinten {d}",aOver:"senkrecht von oben",
+  eHigh:"starke Aufsicht",eAbove:"über Augenhöhe",eEye:"Augenhöhe",eBelow:"unter Augenhöhe",eLow:"Untersicht",
+  lWide:"Weitwinkel",lMild:"leicht weit",lNeutral:"neutral",lShort:"Kurztele",lTele:"Tele",
+  arRig:"Rig-Ansicht. Ziehen oder Pfeiltasten verwenden, um die Kamera zu bewegen.",arCam:"Kamera-Ansicht.",
+  arLock:"Achse {a} sperren",arMinus:"verringern",arPlus:"erhöhen",arLang:"Sprache"}},
+pt:{name:"Português",code:"pt",sep:", ",end:".",gen:"o sujeito",
+ label:{cube:"Cubo",sphere:"Esfera",phone:"Telemóvel",laptop:"Portátil",human:"Figura",car:"Carro",room:"Sala"},
+ subj:{cube:"do cubo",sphere:"da esfera",phone:"do telemóvel",laptop:"do portátil",human:"da figura",car:"do carro",room:"da sala"},
+ side:{r:"direita",l:"esquerda"},
+ az:{0:"Vista frontal direta {s}",
+  15:"Vista quase frontal {s}, com a câmara ligeiramente deslocada para a {d}",
+  30:"Vista de três quartos aberta {s}, a partir da frente e para a {d}",
+  45:"Vista clássica de três quartos {s}, a partir da frente e para a {d}",
+  60:"Vista de três quartos fechada {s} a partir da frente e para a {d}, com a lateral dominante",
+  75:"Vista quase de perfil {s} a partir da {d}, com a frente quase invisível",
+  90:"Perfil lateral completo {s} a partir da {d}",
+  105:"Logo após o perfil: vê-se a {d} {s} e um pouco da traseira",
+  120:"Vista traseira de três quartos {s} a partir da {d}",
+  135:"Vista traseira clássica de três quartos {s}, a partir de trás e para a {d}",
+  150:"Vista maioritariamente traseira {s}, deslocada para a {d}",
+  165:"Vista quase traseira {s}, com a câmara ligeiramente descentrada para a {d}",
+  180:"Diretamente atrás {s}"},
+ el:{90:"captada na vertical a partir de cima, olhando diretamente para baixo",75:"picado muito acentuado a partir do alto",
+  60:"picado forte, câmara bem acima a olhar para baixo",45:"câmara elevada a olhar para baixo",
+  30:"câmara moderadamente elevada, ligeiramente em picado",15:"câmara pouco acima do nível dos olhos, levemente inclinada para baixo",
+  0:"câmara ao nível dos olhos",'-15':"câmara pouco abaixo, levemente inclinada para cima",
+  '-30':"contrapicado suave, câmara abaixo a olhar para cima",'-45':"contrapicado acentuado a olhar para cima",
+  '-60':"contrapicado muito acentuado, junto ao chão",'-75':"ângulo extremo rente ao chão",
+  '-90':"captada na vertical a partir de baixo, olhando diretamente para cima"},
+ shot:[["grande plano extremo","grande plano extremo, {g} transborda do enquadramento"],
+  ["grande plano","grande plano fechado, {g} preenche o enquadramento"],
+  ["plano médio curto","enquadramento próximo, {g} domina a imagem"],
+  ["plano médio","plano médio a distância moderada"],
+  ["plano médio largo","plano médio largo com espaço livre à volta de {g}"],
+  ["plano geral","plano geral, {g} aparece pequeno no enquadramento"],
+  ["plano geral amplo","plano geral muito amplo, {g} fica distante no enquadramento"]],
+ lens:{18:"perspetiva ultra grande-angular de 18 mm, com forte distorção nas bordas",24:"objetiva grande-angular de 24 mm com perspetiva acentuada",
+  35:"perspetiva ligeiramente grande-angular de 35 mm",50:"perspetiva neutra de 50 mm",
+  85:"teleobjetiva curta de 85 mm, perspetiva levemente comprimida",135:"teleobjetiva de 135 mm, perspetiva muito comprimida",
+  200:"teleobjetiva longa de 200 mm, perspetiva fortemente achatada"},
+ walls:["parede da frente","canto frontal direito","parede direita","canto traseiro direito","parede do fundo","canto traseiro esquerdo","parede esquerda","canto frontal esquerdo"],
+ pole:{up:"Vista zenital diretamente acima {s}, olhando na vertical para baixo",
+  down:"Vista nadir diretamente por baixo {s}, olhando na vertical para cima",
+  tail:"com a frente do sujeito voltada para o topo do enquadramento"},
+ interior:"Vista interior a partir de dentro da sala, com a câmara junto à {w} a percorrer o espaço",
+ ui:{sub:"Mova a câmara com X / Y / Z ou arraste para orbitar · copie a frase",reset:"Repor",rig:"Estúdio",cam:"Câmara",
+  hint:"arraste um eixo para deslizar · clique na letra para bloquear · arraste o vazio para orbitar",
+  x:"X",xe:"lateral",y:"Y",ye:"altura",z:"Z",ze:"profundidade",dist:"Distância",lens:"Objetiva",angle:"Ângulo",lock:"Fixar",
+  prompt:"Texto do prompt",copy:"Copiar",copied:"Copiado",cfail:"Prima ⌘C",front:"FRENTE",
+  foot:"A frente do sujeito está voltada para a marca {f} na vista de estúdio. Esquerda / direita são as do próprio sujeito.",
+  azAb:"az",elAb:"el",nCentred:"centrada",nSide:"à {d} {s}",nAtH:"à altura do sujeito",nAbove:"acima do centro",
+  nBelow:"abaixo do centro",nBeside:"ao lado do sujeito",nFront:"à frente",nBehind:"atrás",nInside:"interior",
+  aHead:"frontal",aBehind:"traseira",aProfile:"perfil {d}",aFrontS:"frontal {d}",aRearS:"traseira {d}",aOver:"zenital",
+  eHigh:"picado",eAbove:"acima dos olhos",eEye:"altura dos olhos",eBelow:"abaixo dos olhos",eLow:"contrapicado",
+  lWide:"grande-angular",lMild:"pouco angular",lNeutral:"neutra",lShort:"tele curta",lTele:"teleobjetiva",
+  arRig:"Vista de estúdio. Arraste ou use as setas para mover a câmara.",arCam:"Vista da câmara.",
+  arLock:"Fixar o eixo {a}",arMinus:"diminuir",arPlus:"aumentar",arLang:"Idioma"}},
+
+ru:{name:"Русский",code:"ru",sep:", ",end:".",gen:"объект",
+ label:{cube:"Куб",sphere:"Сфера",phone:"Телефон",laptop:"Ноутбук",human:"Фигура",car:"Машина",room:"Комната"},
+ subj:{cube:"куба",sphere:"сферы",phone:"телефона",laptop:"ноутбука",human:"фигуры",car:"машины",room:"комнаты"},
+ side:{r:"справа",l:"слева"},
+ az:{0:"Строго фронтальный вид {s}",
+  15:"Почти фронтальный вид {s}, камера слегка смещена {d}",
+  30:"Пологий вид {s} в три четверти, спереди и {d}",
+  45:"Классический вид {s} в три четверти, спереди и {d}",
+  60:"Широкий вид {s} в три четверти, спереди и {d}, с преобладанием боковой стороны",
+  75:"Почти профильный вид {s} {d}, передняя сторона едва видна",
+  90:"Полный профильный вид {s} строго {d}",
+  105:"Чуть дальше профиля: видна боковая сторона {s} {d} и намёк на заднюю часть",
+  120:"Задний вид {s} в три четверти, {d} и сзади",
+  135:"Классический задний вид {s} в три четверти, сзади и {d}",
+  150:"Преимущественно задний вид {s}, со смещением {d}",
+  165:"Почти задний вид {s}, камера едва смещена {d}",
+  180:"Строго сзади {s}"},
+ el:{90:"съёмка строго сверху, взгляд отвесно вниз",75:"очень крутой ракурс сверху вниз",
+  60:"сильный верхний ракурс, камера намного выше и смотрит вниз",45:"приподнятая камера, смотрящая вниз",
+  30:"умеренно приподнятая камера с лёгким наклоном вниз",15:"камера чуть выше уровня глаз, слегка наклонена вниз",
+  0:"камера на уровне глаз",'-15':"камера чуть ниже, слегка наклонена вверх",
+  '-30':"нижний ракурс, камера ниже объекта и смотрит вверх",'-45':"выраженный нижний ракурс снизу вверх",
+  '-60':"очень низкий ракурс, почти у самой земли",'-75':"предельный ракурс «с уровня земли», снизу вверх",
+  '-90':"съёмка строго снизу, взгляд отвесно вверх"},
+ shot:[["сверхкрупный план","сверхкрупный план, {g} выходит за пределы кадра"],
+  ["крупный план","плотный крупный план, {g} заполняет кадр"],
+  ["средне-крупный план","близкая компоновка, {g} доминирует в кадре"],
+  ["средний план","средний план на умеренной дистанции"],
+  ["средне-общий план","средне-общий план со свободным пространством вокруг: {g}"],
+  ["общий план","общий план, {g} выглядит небольшим в кадре"],
+  ["дальний план","очень широкий установочный план, {g} далеко в кадре"]],
+ lens:{18:"сверхширокоугольная перспектива 18 мм с сильными искажениями по краям",24:"широкоугольный объектив 24 мм с выраженной перспективой",
+  35:"умеренно широкоугольная перспектива 35 мм",50:"нейтральная перспектива 50 мм",
+  85:"короткий телеобъектив 85 мм, слегка сжатая перспектива",135:"телеобъектив 135 мм, сильно сжатая перспектива",
+  200:"длинный телеобъектив 200 мм, максимально уплощённая перспектива"},
+ walls:["передней стены","переднего правого угла","правой стены","заднего правого угла","задней стены","заднего левого угла","левой стены","переднего левого угла"],
+ pole:{up:"Вид {s} сверху, строго с высоты птичьего полёта, взгляд отвесно вниз",
+  down:"Предельный вид {s} снизу, взгляд отвесно вверх",
+  tail:"передняя сторона объекта направлена к верхнему краю кадра"},
+ interior:"Вид изнутри комнаты, камера у {w} снимает через всё пространство",
+ ui:{sub:"Двигайте камеру по X / Y / Z или перетаскивайте для облёта · копируйте фразу",reset:"Сброс",rig:"Сцена",cam:"Камера",
+  hint:"тяните ось, чтобы сдвинуть · щёлкните букву, чтобы закрепить · тяните пустое место для облёта",
+  x:"X",xe:"вбок",y:"Y",ye:"высота",z:"Z",ze:"глубина",dist:"Дистанция",lens:"Объектив",angle:"Ракурс",lock:"Фикс",
+  prompt:"Текст промпта",copy:"Копировать",copied:"Скопировано",cfail:"Нажмите ⌘C",front:"ПЕРЕД",
+  foot:"Передняя сторона объекта обращена к метке {f} на виде сцены. Лево / право — со стороны самого объекта.",
+  azAb:"аз",elAb:"эл",nCentred:"по центру",nSide:"{d} от {s}",nAtH:"на высоте объекта",nAbove:"выше центра",
+  nBelow:"ниже центра",nBeside:"сбоку от объекта",nFront:"спереди",nBehind:"сзади",nInside:"внутри",
+  aHead:"фронтально",aBehind:"сзади",aProfile:"профиль {d}",aFrontS:"спереди {d}",aRearS:"сзади {d}",aOver:"сверху",
+  eHigh:"верхний ракурс",eAbove:"выше уровня глаз",eEye:"уровень глаз",eBelow:"ниже уровня глаз",eLow:"нижний ракурс",
+  lWide:"широкий",lMild:"слегка широкий",lNeutral:"нейтральный",lShort:"короткий теле",lTele:"телефото",
+  arRig:"Вид сцены. Перетаскивайте или используйте стрелки, чтобы двигать камеру.",arCam:"Вид камеры.",
+  arLock:"Закрепить ось {a}",arMinus:"уменьшить",arPlus:"увеличить",arLang:"Язык"}},
+
+it:{name:"Italiano",code:"it",sep:", ",end:".",gen:"il soggetto",
+ label:{cube:"Cubo",sphere:"Sfera",phone:"Telefono",laptop:"Portatile",human:"Figura",car:"Auto",room:"Stanza"},
+ subj:{cube:"del cubo",sphere:"della sfera",phone:"del telefono",laptop:"del portatile",human:"della figura",car:"dell'auto",room:"della stanza"},
+ side:{r:"destra",l:"sinistra"},
+ az:{0:"Veduta frontale diretta {s}",
+  15:"Veduta quasi frontale {s}, con la camera spostata leggermente verso {d}",
+  30:"Veduta di tre quarti aperta {s}, da davanti e verso {d}",
+  45:"Veduta classica di tre quarti {s}, da davanti e verso {d}",
+  60:"Veduta di tre quarti chiusa {s} da davanti e verso {d}, con il fianco dominante",
+  75:"Veduta quasi di profilo {s} da {d}, con il fronte appena visibile",
+  90:"Profilo laterale completo {s} da {d}",
+  105:"Appena oltre il profilo: si intravede il fianco {s} a {d} e un accenno del retro",
+  120:"Veduta posteriore di tre quarti {s} da {d}",
+  135:"Veduta posteriore classica di tre quarti {s}, da dietro e verso {d}",
+  150:"Veduta prevalentemente posteriore {s}, spostata verso {d}",
+  165:"Veduta quasi posteriore {s}, con la camera appena decentrata verso {d}",
+  180:"Veduta posteriore diretta {s}"},
+ el:{90:"ripresa perfettamente dall'alto, sguardo a piombo verso il basso",75:"ripresa dall'alto molto inclinata",
+  60:"forte ripresa dall'alto, camera ben più in alto rivolta verso il basso",45:"camera sollevata rivolta verso il basso",
+  30:"camera moderatamente sollevata, lievemente inclinata verso il basso",15:"camera poco sopra il livello degli occhi, appena inclinata verso il basso",
+  0:"camera all'altezza degli occhi",'-15':"camera poco sotto, appena inclinata verso l'alto",
+  '-30':"ripresa dal basso, camera sotto il soggetto rivolta verso l'alto",'-45':"marcata ripresa dal basso verso l'alto",
+  '-60':"ripresa dal basso molto accentuata, vicino al suolo",'-75':"angolazione estrema a filo del terreno",
+  '-90':"ripresa perfettamente dal basso, sguardo a piombo verso l'alto"},
+ shot:[["primissimo piano","primissimo piano, {g} deborda dall'inquadratura"],
+  ["primo piano","primo piano stretto, {g} riempie l'inquadratura"],
+  ["mezzo primo piano","inquadratura ravvicinata, {g} domina il quadro"],
+  ["piano medio","piano medio a distanza moderata"],
+  ["piano americano largo","inquadratura medio-larga con spazio libero attorno a {g}"],
+  ["campo lungo","campo lungo, {g} appare piccolo nell'inquadratura"],
+  ["campo lunghissimo","campo lunghissimo di ambientazione, {g} resta lontano nell'inquadratura"]],
+ lens:{18:"prospettiva ultragrandangolare da 18 mm, con forte distorsione ai bordi",24:"obiettivo grandangolare da 24 mm con prospettiva marcata",
+  35:"prospettiva leggermente grandangolare da 35 mm",50:"prospettiva neutra da 50 mm",
+  85:"teleobiettivo corto da 85 mm, prospettiva lievemente compressa",135:"teleobiettivo da 135 mm, prospettiva fortemente compressa",
+  200:"teleobiettivo lungo da 200 mm, prospettiva molto appiattita"},
+ walls:["parete frontale","angolo anteriore destro","parete destra","angolo posteriore destro","parete di fondo","angolo posteriore sinistro","parete sinistra","angolo anteriore sinistro"],
+ pole:{up:"Veduta zenitale esattamente al di sopra {s}, sguardo verticale verso il basso",
+  down:"Veduta dal basso esattamente al di sotto {s}, sguardo verticale verso l'alto",
+  tail:"con il fronte del soggetto rivolto verso il bordo superiore dell'inquadratura"},
+ interior:"Veduta interna dall'interno della stanza, con la camera vicino alla {w} che attraversa lo spazio",
+ ui:{sub:"Muovi la camera con X / Y / Z oppure trascina per orbitare · copia la frase",reset:"Reimposta",rig:"Set",cam:"Camera",
+  hint:"trascina un asse per scorrere · clicca la lettera per bloccare · trascina il vuoto per orbitare",
+  x:"X",xe:"laterale",y:"Y",ye:"altezza",z:"Z",ze:"profondità",dist:"Distanza",lens:"Obiettivo",angle:"Angolo",lock:"Blocca",
+  prompt:"Testo del prompt",copy:"Copia",copied:"Copiato",cfail:"Premi ⌘C",front:"FRONTE",
+  foot:"Il fronte del soggetto è rivolto verso il segno {f} nella vista set. Sinistra / destra sono quelle del soggetto.",
+  azAb:"az",elAb:"el",nCentred:"centrata",nSide:"a {d} {s}",nAtH:"all'altezza del soggetto",nAbove:"sopra il centro",
+  nBelow:"sotto il centro",nBeside:"di fianco al soggetto",nFront:"davanti",nBehind:"dietro",nInside:"interno",
+  aHead:"frontale",aBehind:"posteriore",aProfile:"profilo {d}",aFrontS:"anteriore {d}",aRearS:"posteriore {d}",aOver:"zenitale",
+  eHigh:"dall'alto",eAbove:"sopra gli occhi",eEye:"altezza occhi",eBelow:"sotto gli occhi",eLow:"dal basso",
+  lWide:"grandangolo",lMild:"poco largo",lNeutral:"neutro",lShort:"tele corto",lTele:"teleobiettivo",
+  arRig:"Vista set. Trascina o usa le frecce per muovere la camera.",arCam:"Vista camera.",
+  arLock:"Blocca l'asse {a}",arMinus:"diminuisci",arPlus:"aumenta",arLang:"Lingua"}}
+};
+
+// localStorage throws outright in sandboxed/blocked-cookie contexts - a remembered
+// preference must never be able to take the whole page down with it.
+const store={
+  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+};
+let LANG=store.get("fta-lang")||"";
+if(!LANGS[LANG]){
+  const n=(navigator.language||"en").toLowerCase();
+  LANG=Object.keys(LANGS).find(k=>n.startsWith(k))||"en";
 }
-const EL_TEXT={
-  90:"shot from directly overhead, looking straight down",
-  75:"steep overhead angle looking down",
-  60:"high angle, camera well above the subject looking down",
-  45:"elevated camera looking down at the subject",
-  30:"moderately elevated camera looking downward",
-  15:"camera just above eye level, angled gently down",
-  0:"camera level with the subject",
-  "-15":"camera just below the subject, angled gently up",
-  "-30":"low angle, camera below the subject looking up",
-  "-45":"strong low angle looking up at the subject",
-  "-60":"very low angle, close to the ground looking up",
-  "-75":"extreme worm's-eye angle from near ground level",
-  "-90":"shot from directly underneath, looking straight up",
-};
-const LENS_TEXT={
-  18:"ultra-wide 18mm perspective, strong distortion at the edges",
-  24:"wide 24mm lens with pronounced perspective",
-  35:"mild wide-angle 35mm perspective",
-  50:"neutral 50mm perspective",
-  85:"85mm short telephoto, gently compressed perspective",
-  135:"135mm telephoto, strongly compressed perspective",
-  200:"200mm long telephoto, heavily flattened perspective",
-};
+const T=()=>LANGS[LANG];
+const fill=(str,v)=>str.replace(/\{(\w)\}/g,(m,k)=>v[k]!==undefined?v[k]:m);
+
 function shotText(o){
+  const L=T();
   const frac=Math.max(Math.atan(o.hw/S.d)/Math.atan(18/S.f),
                       Math.atan(o.hh/S.d)/Math.atan(12/S.f));
-  if(frac>1.5) return ["extreme close-up",`extreme close-up, ${o.subj} overflowing the frame`];
-  if(frac>1.0) return ["close-up",`tight close-up, ${o.subj} filling the frame`];
-  if(frac>0.70)return ["medium close-up",`close framing, ${o.subj} dominating the frame`];
-  if(frac>0.45)return ["medium shot",`medium shot at moderate distance`];
-  if(frac>0.28)return ["medium-wide",`medium-wide shot with clear space around ${o.subj}`];
-  if(frac>0.15)return ["wide shot",`wide shot, ${o.subj} small within the frame`];
-  return ["very wide",`very wide establishing shot, ${o.subj} distant in the frame`];
+  const i=frac>1.5?0:frac>1.0?1:frac>0.70?2:frac>0.45?3:frac>0.28?4:frac>0.15?5:6;
+  return [L.shot[i][0], fill(L.shot[i][1],{g:L.gen})];
 }
-const WALLS=["front wall","front-right corner","right wall","back-right corner","back wall",
-             "back-left corner","left wall","front-left corner"];
 function describe(o){
-  const azk=azKey(),elk=elKey();
-  const el=EL_TEXT[String(elk)].replace("the subject",o.subj);
-  if(o.interior&&S.d<=o.interior){
-    const w=WALLS[Math.round(azk/45)%8];
-    return `Interior view from inside the room, camera near the ${w} looking across the space, ${el}, ${LENS_TEXT[S.f]}.`;
-  }
+  const L=T(),J=L.sep,azk=azKey(),elk=elKey(),s=L.subj[S.obj];
+  if(o.interior&&S.d<=o.interior)
+    return fill(L.interior,{w:L.walls[Math.round(azk/45)%8]})+J+L.el[elk]+J+L.lens[S.f]+L.end;
   // ponytail: at +/-90 elevation the camera sits on the axis, so azimuth changes nothing -
   // saying "three-quarter view" there would contradict "straight down".
-  if(Math.abs(elk)===90){
-    const pole=elk>0
-      ? `Top-down bird's-eye view directly above ${o.subj}, looking straight down`
-      : `Extreme upward view from directly beneath ${o.subj}, looking straight up`;
-    return `${pole}, its front pointing toward the top of the frame, ${shotText(o)[1]}, ${LENS_TEXT[S.f]}.`;
-  }
-  return `${azText(azk,o.subj)}, ${el}, ${shotText(o)[1]}, ${LENS_TEXT[S.f]}.`;
+  if(Math.abs(elk)===90)
+    return fill(elk>0?L.pole.up:L.pole.down,{s})+J+L.pole.tail+J+shotText(o)[1]+J+L.lens[S.f]+L.end;
+  return fill(L.az[azk<=180?azk:360-azk],{s,d:L.side[azk<180?"r":"l"]})
+    +J+L.el[elk]+J+shotText(o)[1]+J+L.lens[S.f]+L.end;
+}
+
+function applyUI(){
+  const L=T(),u=L.ui;
+  document.documentElement.lang=L.code;
+  $("sub").textContent=u.sub;
+  $("reset").textContent=u.reset;
+  $("capRigLbl").textContent=u.rig;
+  $("capCamLbl").textContent=u.cam;
+  $("hintRig").textContent=u.hint;
+  $("em-x").textContent=u.xe;$("em-y").textContent=u.ye;$("em-z").textContent=u.ze;
+  $("lbl-dist").textContent=u.dist;$("lbl-lens").textContent=u.lens;$("lbl-angle").textContent=u.angle;
+  $("tag").textContent=u.prompt;$("copy").textContent=u.copy;
+  $("foot").innerHTML="";
+  u.foot.split("{f}").forEach((part,i)=>{
+    if(i){const b=document.createElement("b");b.textContent=u.front;$("foot").appendChild(b);}
+    $("foot").appendChild(document.createTextNode(part));
+  });
+  rigCv.setAttribute("aria-label",u.arRig);
+  camCv.setAttribute("aria-label",u.arCam);
+  $("lang").setAttribute("aria-label",u.arLang);
+  document.querySelectorAll(".lock").forEach(b=>{
+    b.textContent=u.lock;
+    b.setAttribute("aria-label",fill(u.arLock,{a:"XYZ"[+b.dataset.lock]}));
+  });
+  document.querySelectorAll(".step button").forEach(b=>
+    b.setAttribute("aria-label",`${b.dataset.d==="1"?u.arPlus:u.arMinus} ${"XYZ"[+b.dataset.ax]}`));
+  $("objs").innerHTML=Object.keys(OBJECTS)
+    .map(k=>`<button data-o="${k}" aria-pressed="false">${L.label[k]}</button>`).join("");
 }
 
 /* ---------- render ---------- */
@@ -677,24 +1212,25 @@ function render(){
   $("v-x").textContent=fx(x);
   $("v-y").textContent=fx(y);
   $("v-z").textContent=fx(z);
-  $("n-x").textContent=Math.abs(x)<0.05?"centred":`to ${o.subj}'s ${x>0?"right":"left"}`;
-  $("n-y").textContent=Math.abs(y)<0.05?"at subject height":(y>0?"above centre":"below centre");
-  $("n-z").textContent=Math.abs(z)<0.05?"beside the subject":(z>0?"in front":"behind");
+  const L=T(),u=L.ui,sj=L.subj[S.obj];
+  $("n-x").textContent=Math.abs(x)<0.05?u.nCentred:fill(u.nSide,{s:sj,d:L.side[x>0?"r":"l"]});
+  $("n-y").textContent=Math.abs(y)<0.05?u.nAtH:(y>0?u.nAbove:u.nBelow);
+  $("n-z").textContent=Math.abs(z)<0.05?u.nBeside:(z>0?u.nFront:u.nBehind);
   $("v-d").textContent=S.d.toFixed(1);
   const elSign=Math.round(S.el)>0?"+":"";
-  $("capRig").textContent=`az ${Math.round(S.az)}° · el ${elSign}${Math.round(S.el)}°`;
+  $("capRig").textContent=`${u.azAb} ${Math.round(S.az)}° · ${u.elAb} ${elSign}${Math.round(S.el)}°`;
   $("capCam").textContent=`${S.f}mm · ${S.d.toFixed(1)}`;
 
   const azk=azKey(),elk=elKey();
-  const b=azk<=180?azk:360-azk, side=azk<180?"right":"left";
-  $("v-ang").textContent=`${Math.round(S.az)}° az · ${elSign}${Math.round(S.el)}° el`;
-  $("n-ang").textContent = (Math.abs(elk)===90?"overhead":
-      b===0?"head-on":b===180?"behind":b===90?`${side} profile`:
-      (b<90?`front-${side}`:`rear-${side}`))
-    + " · " + (S.el>45?"high angle":S.el>0.5?"above eye level":Math.abs(S.el)<=0.5?"eye level":
-      S.el>-45?"below eye level":"low angle");
-  $("n-d").textContent = (o.interior&&S.d<=o.interior)?"inside":shotText(o)[0];
-  $("n-f").textContent = S.f<=24?"wide":S.f<50?"mild wide":S.f===50?"neutral":S.f<=85?"short tele":"telephoto";
+  const b=azk<=180?azk:360-azk, side=L.side[azk<180?"r":"l"];
+  $("v-ang").textContent=`${Math.round(S.az)}° ${u.azAb} · ${elSign}${Math.round(S.el)}° ${u.elAb}`;
+  $("n-ang").textContent = (Math.abs(elk)===90?u.aOver:
+      b===0?u.aHead:b===180?u.aBehind:b===90?fill(u.aProfile,{d:side}):
+      fill(b<90?u.aFrontS:u.aRearS,{d:side}))
+    + " · " + (S.el>45?u.eHigh:S.el>0.5?u.eAbove:Math.abs(S.el)<=0.5?u.eEye:
+      S.el>-45?u.eBelow:u.eLow);
+  $("n-d").textContent = (o.interior&&S.d<=o.interior)?u.nInside:shotText(o)[0];
+  $("n-f").textContent = S.f<=24?u.lWide:S.f<50?u.lMild:S.f===50?u.lNeutral:S.f<=85?u.lShort:u.lTele;
 
   distEl.value=S.d;
   document.querySelectorAll(".lock").forEach(b=>b.setAttribute("aria-pressed",String(LOCK[+b.dataset.lock])));
@@ -729,9 +1265,7 @@ function pickObject(k){
   render();
 }
 
-// chips
-$("objs").innerHTML=Object.entries(OBJECTS)
-  .map(([k,o])=>`<button data-o="${k}" aria-pressed="false">${o.label}</button>`).join("");
+// chips (labels come from applyUI, which rebuilds them per language)
 $("objs").onclick=e=>{const b=e.target.closest("button");if(b)pickObject(b.dataset.o);};
 $("lens").innerHTML=LENSES.map(f=>`<button data-f="${f}" aria-pressed="false">${f}</button>`).join("");
 $("lens").onclick=e=>{const b=e.target.closest("button");if(b){S.f=+b.dataset.f;render();}};
@@ -799,18 +1333,24 @@ for(const cv of [rigCv,camCv]){
 
 $("copy").onclick=async()=>{
   const btn=$("copy"),txt=$("sentence").textContent;
-  try{await navigator.clipboard.writeText(txt);btn.textContent="Copied";btn.dataset.done="1";}
+  try{await navigator.clipboard.writeText(txt);btn.textContent=T().ui.copied;btn.dataset.done="1";}
   catch{
     const r=document.createRange();r.selectNodeContents($("sentence"));
     const s=getSelection();s.removeAllRanges();s.addRange(r);
-    btn.textContent="Press ⌘C";btn.dataset.done="1";
+    btn.textContent=T().ui.cfail;btn.dataset.done="1";
   }
-  setTimeout(()=>{btn.textContent="Copy";delete btn.dataset.done;},1500);
+  setTimeout(()=>{btn.textContent=T().ui.copy;delete btn.dataset.done;},1500);
 };
 
 new ResizeObserver(render).observe(document.querySelector(".stage"));
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
 new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
 document.fonts&&document.fonts.ready.then(render);
+$("lang").innerHTML=Object.entries(LANGS)
+  .map(([k,L])=>`<option value="${k}">${L.name}</option>`).join("");
+$("lang").value=LANG;
+$("lang").onchange=e=>{LANG=e.target.value;store.set("fta-lang",LANG);applyUI();render();};
+
+applyUI();
 pickObject("cube");
 </script>
