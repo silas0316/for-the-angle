@@ -175,6 +175,17 @@ h1{
 .ticks i:nth-child(2){top:0;right:0;border-top-width:2.5px;border-right-width:2.5px;border-top-right-radius:8px}
 .ticks i:nth-child(3){bottom:0;left:0;border-bottom-width:2.5px;border-left-width:2.5px;border-bottom-left-radius:8px}
 .ticks i:nth-child(4){bottom:0;right:0;border-bottom-width:2.5px;border-right-width:2.5px;border-bottom-right-radius:8px}
+.pane--cam .cap{justify-content:flex-start;gap:12px;padding-right:62px}
+.pane--cam .ticks{inset:50px 20px 20px}
+.shot{
+  position:absolute;top:12px;right:14px;width:34px;height:34px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--sunk);border:1.5px solid var(--line);border-radius:50%;
+  color:var(--ink-2);cursor:pointer;transition:color .18s,border-color .18s,transform .18s,background .18s;
+}
+.shot svg{width:17px;height:17px;display:block}
+.shot:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+.shot[data-done]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .hint{
   position:absolute;bottom:14px;left:20px;right:20px;pointer-events:none;
   font:400 11.5px/1.5 "Nunito Sans",sans-serif;color:var(--ink-3);
@@ -293,10 +304,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <figcaption class="cap"><b id="capRigLbl">Rig</b><span id="capRig">az 45 · el 30</span></figcaption>
       <span class="hint" id="hintRig">drag a track to slide · click its letter to lock · drag empty space to orbit</span>
     </figure>
-    <figure class="pane">
+    <figure class="pane pane--cam">
       <canvas id="cam" tabindex="0" aria-label="Camera view. Drag, or use arrow keys, to move the camera around the subject."></canvas>
       <div class="ticks"><i></i><i></i><i></i><i></i></div>
       <figcaption class="cap"><b id="capCamLbl">Camera</b><span id="capCam">50mm</span></figcaption>
+      <button class="shot" id="copyImg" aria-label="Copy camera view as an image">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="12" height="12" rx="2.5"></rect>
+          <path d="M6 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V6"></path>
+        </svg>
+      </button>
     </figure>
   </div>
 
@@ -731,7 +748,7 @@ en:{name:"English",code:"en",sep:", ",end:".",gen:"the subject",
   eHigh:"high angle",eAbove:"above eye level",eEye:"eye level",eBelow:"below eye level",eLow:"low angle",
   lWide:"wide",lMild:"mild wide",lNeutral:"neutral",lShort:"short tele",lTele:"telephoto",
   arRig:"Rig view. Drag, or use arrow keys, to move the camera around the subject.",arCam:"Camera view.",
-  arLock:"Lock the {a} axis",arMinus:"decrease",arPlus:"increase",arLang:"Language"}},
+  arLock:"Lock the {a} axis",arMinus:"decrease",arPlus:"increase",arLang:"Language",copyImg:"Copy camera view as an image"}},
 
 zh:{name:"繁體中文",code:"zh-Hant",sep:"，",end:"。",gen:"主體",
  label:{cube:"立方體",sphere:"球體",phone:"手機",laptop:"筆電",human:"人物",car:"汽車",room:"房間"},
@@ -784,7 +801,7 @@ zh:{name:"繁體中文",code:"zh-Hant",sep:"，",end:"。",gen:"主體",
   eHigh:"高角度",eAbove:"高於視平線",eEye:"視平線",eBelow:"低於視平線",eLow:"低角度",
   lWide:"廣角",lMild:"輕廣角",lNeutral:"標準",lShort:"中長焦",lTele:"長焦",
   arRig:"機位視圖。拖曳或使用方向鍵可移動鏡頭。",arCam:"鏡頭視圖。",
-  arLock:"鎖定 {a} 軸",arMinus:"減少",arPlus:"增加",arLang:"語言"}},
+  arLock:"鎖定 {a} 軸",arMinus:"減少",arPlus:"增加",arLang:"語言",copyImg:"複製鏡頭畫面為圖片"}},
 
 ja:{name:"日本語",code:"ja",sep:"、",end:"。",gen:"被写体",
  label:{cube:"立方体",sphere:"球体",phone:"スマホ",laptop:"ノートPC",human:"人物",car:"車",room:"部屋"},
@@ -837,7 +854,7 @@ ja:{name:"日本語",code:"ja",sep:"、",end:"。",gen:"被写体",
   eHigh:"ハイアングル",eAbove:"目線より上",eEye:"目線の高さ",eBelow:"目線より下",eLow:"ローアングル",
   lWide:"広角",lMild:"やや広角",lNeutral:"標準",lShort:"中望遠",lTele:"望遠",
   arRig:"リグビュー。ドラッグまたは矢印キーでカメラを移動します。",arCam:"カメラビュー。",
-  arLock:"{a} 軸をロック",arMinus:"減らす",arPlus:"増やす",arLang:"言語"}},
+  arLock:"{a} 軸をロック",arMinus:"減らす",arPlus:"増やす",arLang:"言語",copyImg:"カメラビューを画像としてコピー"}},
 ko:{name:"한국어",code:"ko",sep:", ",end:".",gen:"피사체",
  label:{cube:"정육면체",sphere:"구",phone:"스마트폰",laptop:"노트북",human:"인물",car:"자동차",room:"방"},
  subj:{cube:"정육면체",sphere:"구체",phone:"스마트폰",laptop:"노트북",human:"인물",car:"자동차",room:"방"},
@@ -889,7 +906,7 @@ ko:{name:"한국어",code:"ko",sep:", ",end:".",gen:"피사체",
   eHigh:"하이앵글",eAbove:"눈높이 위",eEye:"눈높이",eBelow:"눈높이 아래",eLow:"로우앵글",
   lWide:"광각",lMild:"약광각",lNeutral:"표준",lShort:"준망원",lTele:"망원",
   arRig:"리그 뷰. 드래그하거나 방향키로 카메라를 이동합니다.",arCam:"카메라 뷰.",
-  arLock:"{a}축 잠금",arMinus:"감소",arPlus:"증가",arLang:"언어"}},
+  arLock:"{a}축 잠금",arMinus:"감소",arPlus:"증가",arLang:"언어",copyImg:"카메라 뷰를 이미지로 복사"}},
 
 es:{name:"Español",code:"es",sep:", ",end:".",gen:"el sujeto",
  label:{cube:"Cubo",sphere:"Esfera",phone:"Móvil",laptop:"Portátil",human:"Figura",car:"Coche",room:"Sala"},
@@ -942,7 +959,7 @@ es:{name:"Español",code:"es",sep:", ",end:".",gen:"el sujeto",
   eHigh:"picado",eAbove:"sobre los ojos",eEye:"altura de los ojos",eBelow:"bajo los ojos",eLow:"contrapicado",
   lWide:"angular",lMild:"angular suave",lNeutral:"neutro",lShort:"tele corto",lTele:"teleobjetivo",
   arRig:"Vista de plató. Arrastra o usa las flechas para mover la cámara.",arCam:"Vista de cámara.",
-  arLock:"Fijar el eje {a}",arMinus:"disminuir",arPlus:"aumentar",arLang:"Idioma"}},
+  arLock:"Fijar el eje {a}",arMinus:"disminuir",arPlus:"aumentar",arLang:"Idioma",copyImg:"Copiar la vista de cámara como imagen"}},
 fr:{name:"Français",code:"fr",sep:", ",end:".",gen:"le sujet",
  label:{cube:"Cube",sphere:"Sphère",phone:"Téléphone",laptop:"Portable",human:"Personnage",car:"Voiture",room:"Pièce"},
  subj:{cube:"du cube",sphere:"de la sphère",phone:"du téléphone",laptop:"de l'ordinateur portable",human:"du personnage",car:"de la voiture",room:"de la pièce"},
@@ -994,7 +1011,7 @@ fr:{name:"Français",code:"fr",sep:", ",end:".",gen:"le sujet",
   eHigh:"plongée",eAbove:"au-dessus des yeux",eEye:"hauteur des yeux",eBelow:"sous les yeux",eLow:"contre-plongée",
   lWide:"grand-angle",lMild:"légèrement large",lNeutral:"neutre",lShort:"télé court",lTele:"téléobjectif",
   arRig:"Vue plateau. Faites glisser ou utilisez les flèches pour déplacer la caméra.",arCam:"Vue caméra.",
-  arLock:"Bloquer l'axe {a}",arMinus:"diminuer",arPlus:"augmenter",arLang:"Langue"}},
+  arLock:"Bloquer l'axe {a}",arMinus:"diminuer",arPlus:"augmenter",arLang:"Langue",copyImg:"Copier la vue caméra en image"}},
 
 de:{name:"Deutsch",code:"de",sep:", ",end:".",gen:"das Motiv",
  label:{cube:"Würfel",sphere:"Kugel",phone:"Handy",laptop:"Laptop",human:"Figur",car:"Auto",room:"Raum"},
@@ -1047,7 +1064,7 @@ de:{name:"Deutsch",code:"de",sep:", ",end:".",gen:"das Motiv",
   eHigh:"starke Aufsicht",eAbove:"über Augenhöhe",eEye:"Augenhöhe",eBelow:"unter Augenhöhe",eLow:"Untersicht",
   lWide:"Weitwinkel",lMild:"leicht weit",lNeutral:"neutral",lShort:"Kurztele",lTele:"Tele",
   arRig:"Rig-Ansicht. Ziehen oder Pfeiltasten verwenden, um die Kamera zu bewegen.",arCam:"Kamera-Ansicht.",
-  arLock:"Achse {a} sperren",arMinus:"verringern",arPlus:"erhöhen",arLang:"Sprache"}},
+  arLock:"Achse {a} sperren",arMinus:"verringern",arPlus:"erhöhen",arLang:"Sprache",copyImg:"Kameraansicht als Bild kopieren"}},
 pt:{name:"Português",code:"pt",sep:", ",end:".",gen:"o sujeito",
  label:{cube:"Cubo",sphere:"Esfera",phone:"Telemóvel",laptop:"Portátil",human:"Figura",car:"Carro",room:"Sala"},
  subj:{cube:"do cubo",sphere:"da esfera",phone:"do telemóvel",laptop:"do portátil",human:"da figura",car:"do carro",room:"da sala"},
@@ -1099,7 +1116,7 @@ pt:{name:"Português",code:"pt",sep:", ",end:".",gen:"o sujeito",
   eHigh:"picado",eAbove:"acima dos olhos",eEye:"altura dos olhos",eBelow:"abaixo dos olhos",eLow:"contrapicado",
   lWide:"grande-angular",lMild:"pouco angular",lNeutral:"neutra",lShort:"tele curta",lTele:"teleobjetiva",
   arRig:"Vista de estúdio. Arraste ou use as setas para mover a câmara.",arCam:"Vista da câmara.",
-  arLock:"Fixar o eixo {a}",arMinus:"diminuir",arPlus:"aumentar",arLang:"Idioma"}},
+  arLock:"Fixar o eixo {a}",arMinus:"diminuir",arPlus:"aumentar",arLang:"Idioma",copyImg:"Copiar a vista da câmara como imagem"}},
 
 ru:{name:"Русский",code:"ru",sep:", ",end:".",gen:"объект",
  label:{cube:"Куб",sphere:"Сфера",phone:"Телефон",laptop:"Ноутбук",human:"Фигура",car:"Машина",room:"Комната"},
@@ -1152,7 +1169,7 @@ ru:{name:"Русский",code:"ru",sep:", ",end:".",gen:"объект",
   eHigh:"верхний ракурс",eAbove:"выше уровня глаз",eEye:"уровень глаз",eBelow:"ниже уровня глаз",eLow:"нижний ракурс",
   lWide:"широкий",lMild:"слегка широкий",lNeutral:"нейтральный",lShort:"короткий теле",lTele:"телефото",
   arRig:"Вид сцены. Перетаскивайте или используйте стрелки, чтобы двигать камеру.",arCam:"Вид камеры.",
-  arLock:"Закрепить ось {a}",arMinus:"уменьшить",arPlus:"увеличить",arLang:"Язык"}},
+  arLock:"Закрепить ось {a}",arMinus:"уменьшить",arPlus:"увеличить",arLang:"Язык",copyImg:"Скопировать вид камеры как изображение"}},
 
 it:{name:"Italiano",code:"it",sep:", ",end:".",gen:"il soggetto",
  label:{cube:"Cubo",sphere:"Sfera",phone:"Telefono",laptop:"Portatile",human:"Figura",car:"Auto",room:"Stanza"},
@@ -1205,7 +1222,7 @@ it:{name:"Italiano",code:"it",sep:", ",end:".",gen:"il soggetto",
   eHigh:"dall'alto",eAbove:"sopra gli occhi",eEye:"altezza occhi",eBelow:"sotto gli occhi",eLow:"dal basso",
   lWide:"grandangolo",lMild:"poco largo",lNeutral:"neutro",lShort:"tele corto",lTele:"teleobiettivo",
   arRig:"Vista set. Trascina o usa le frecce per muovere la camera.",arCam:"Vista camera.",
-  arLock:"Blocca l'asse {a}",arMinus:"diminuisci",arPlus:"aumenta",arLang:"Lingua"}}
+  arLock:"Blocca l'asse {a}",arMinus:"diminuisci",arPlus:"aumenta",arLang:"Lingua",copyImg:"Copia la vista camera come immagine"}}
 };
 
 // localStorage throws outright in sandboxed/blocked-cookie contexts - a remembered
@@ -1679,6 +1696,8 @@ function applyUI(){
   rigCv.setAttribute("aria-label",u.arRig);
   camCv.setAttribute("aria-label",u.arCam);
   $("lang").setAttribute("aria-label",u.arLang);
+  $("copyImg").setAttribute("aria-label",u.copyImg);
+  $("copyImg").setAttribute("title",u.copyImg);
   document.querySelectorAll(".lock").forEach(b=>{
     b.textContent=u.lock;
     b.setAttribute("aria-label",fill(u.arLock,{a:"XYZ"[+b.dataset.lock]}));
@@ -1820,6 +1839,39 @@ for(const cv of [rigCv,camCv]){
     e.preventDefault();
   });
 }
+
+// Re-render the camera view clean and opaque for export: no rule-of-thirds
+// overlay, and a filled background, since a transparent PNG shows as black
+// in most apps you would paste it into.
+function exportCam(){
+  const o=OBJECTS[S.obj],lines=o.lines(),grid=o.noGround?[]:groundGrid(o);
+  const W=1200,H=800,cv=document.createElement("canvas");
+  cv.width=W;cv.height=H;
+  const ctx=cv.getContext("2d");
+  ctx.fillStyle=CSS("--knockout");ctx.fillRect(0,0,W,H);
+  ctx.lineJoin=ctx.lineCap="round";
+  const V=view(camPos(S.az,S.el,S.d),[0,0,0]),sc=(W/2)*S.f/18;
+  ctx.strokeStyle=CSS("--grid");ctx.lineWidth=2;strokeLines(ctx,grid,V,sc,W/2,H/2);
+  ctx.strokeStyle=CSS("--ink");ctx.lineWidth=3.2;strokeLines(ctx,lines,V,sc,W/2,H/2);
+  return cv;
+}
+const TICK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5 9.5 18 20 6.5"></path></svg>';
+$("copyImg").onclick=async()=>{
+  const btn=$("copyImg"),icon=btn.innerHTML;
+  const blobP=new Promise(res=>exportCam().toBlob(res,"image/png"));
+  const done=()=>{btn.innerHTML=TICK;btn.dataset.done="1";
+    setTimeout(()=>{btn.innerHTML=icon;delete btn.dataset.done;},1500);};
+  try{
+    if(typeof ClipboardItem==="undefined")throw new Error("no ClipboardItem");
+    // ClipboardItem must be built synchronously inside the gesture for Safari
+    await navigator.clipboard.write([new ClipboardItem({"image/png":blobP})]);
+    done();
+  }catch(err){
+    const url=URL.createObjectURL(await blobP),a=document.createElement("a");
+    a.href=url;a.download="for-the-angle.png";a.click();
+    URL.revokeObjectURL(url);done();
+  }
+};
 
 $("copy").onclick=async()=>{
   const btn=$("copy"),txt=$("sentence").textContent;
