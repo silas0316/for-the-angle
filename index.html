@@ -175,7 +175,7 @@ h1{
 .ticks i:nth-child(2){top:0;right:0;border-top-width:2.5px;border-right-width:2.5px;border-top-right-radius:8px}
 .ticks i:nth-child(3){bottom:0;left:0;border-bottom-width:2.5px;border-left-width:2.5px;border-bottom-left-radius:8px}
 .ticks i:nth-child(4){bottom:0;right:0;border-bottom-width:2.5px;border-right-width:2.5px;border-bottom-right-radius:8px}
-.pane--cam .cap{justify-content:flex-start;gap:12px;padding-right:62px}
+.pane--cam .cap,.pane--rig .cap{justify-content:flex-start;gap:12px;padding-right:62px}
 .pane--cam .ticks{inset:50px 20px 20px}
 .shot{
   position:absolute;top:12px;right:14px;width:34px;height:34px;padding:0;
@@ -186,6 +186,7 @@ h1{
 .shot svg{width:17px;height:17px;display:block}
 .shot:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
 .shot[data-done]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.shot[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-line)}
 .hint{
   position:absolute;bottom:14px;left:20px;right:20px;pointer-events:none;
   font:400 11.5px/1.5 "Nunito Sans",sans-serif;color:var(--ink-3);
@@ -334,9 +335,15 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <nav class="objs" id="objs" aria-label="Subject"></nav>
 
   <div class="stage">
-    <figure class="pane">
+    <figure class="pane pane--rig">
       <canvas id="rig" tabindex="0" aria-label="Rig view. Drag, or use arrow keys, to move the camera around the subject."></canvas>
       <figcaption class="cap"><b id="capRigLbl">Rig</b><span id="capRig">az 45 · el 30</span></figcaption>
+      <button class="shot" id="floorBtn" aria-pressed="true" aria-label="Ground plane">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2.5 19h19M5.5 14.5h13M8 10.5h8"></path>
+          <path d="M9.6 10.5 6 19M14.4 10.5 18 19"></path>
+        </svg>
+      </button>
       <span class="hint" id="hintRig">drag a track to slide · click its letter to lock · drag empty space to orbit</span>
     </figure>
     <figure class="pane pane--cam">
@@ -598,6 +605,7 @@ const DURS=[3,5,8,10];
 const MOVE={a:null,b:null,dur:5};
 let busy=false;   // a preview or recording is running
 let MODE=store.get("fta-mode")==="video"?"video":"image";
+let FLOOR=store.get("fta-floor")!=="0";   // the reference ground plane
 // The camera position S.p is the truth; az / el / d are derived from it by sync().
 // That lets the X/Y/Z steppers and the orbit drag write to the same place.
 const S={obj:"cube",p:[0,0,4.5],az:45,el:30,d:4.5,f:50};
@@ -824,7 +832,7 @@ en:{name:"English",code:"en",sep:", ",end:".",gen:"the subject",
   eHigh:"high angle",eAbove:"above eye level",eEye:"eye level",eBelow:"below eye level",eLow:"low angle",
   lWide:"wide",lMild:"mild wide",lNeutral:"neutral",lShort:"short tele",lTele:"telephoto",
   arRig:"Rig view. Drag, or use arrow keys, to move the camera around the subject.",arCam:"Camera view.",
-  arLock:"Lock the {a} axis",arMinus:"decrease",arPlus:"increase",arLang:"Language",copyImg:"Copy camera view as an image",mvLabel:"Move",clipLabel:"Clip",setStart:"Set start",setEnd:"Set end",clearMove:"Clear",preview:"Preview",record:"Record",recording:"Recording…",mvNone:"Set both points",mvHalf:"Start set — now set the end",mvReady:"Ready · {t}s move",mvUnsupported:"Recording is not supported in this browser",modeImage:"Image",modeVideo:"Video",mvImageMode:"Video mode only"}},
+  arLock:"Lock the {a} axis",arMinus:"decrease",arPlus:"increase",arLang:"Language",copyImg:"Copy camera view as an image",floor:"Ground plane",mvLabel:"Move",clipLabel:"Clip",setStart:"Set start",setEnd:"Set end",clearMove:"Clear",preview:"Preview",record:"Record",recording:"Recording…",mvNone:"Set both points",mvHalf:"Start set — now set the end",mvReady:"Ready · {t}s move",mvUnsupported:"Recording is not supported in this browser",modeImage:"Image",modeVideo:"Video",mvImageMode:"Video mode only"}},
 
 zh:{name:"繁體中文",code:"zh-Hant",sep:"，",end:"。",gen:"主體",
  label:{cube:"立方體",sphere:"球體",phone:"手機",laptop:"筆電",human:"人物",car:"汽車",room:"房間"},
@@ -877,7 +885,7 @@ zh:{name:"繁體中文",code:"zh-Hant",sep:"，",end:"。",gen:"主體",
   eHigh:"高角度",eAbove:"高於視平線",eEye:"視平線",eBelow:"低於視平線",eLow:"低角度",
   lWide:"廣角",lMild:"輕廣角",lNeutral:"標準",lShort:"中長焦",lTele:"長焦",
   arRig:"機位視圖。拖曳或使用方向鍵可移動鏡頭。",arCam:"鏡頭視圖。",
-  arLock:"鎖定 {a} 軸",arMinus:"減少",arPlus:"增加",arLang:"語言",copyImg:"複製鏡頭畫面為圖片",mvLabel:"運鏡",clipLabel:"影片",setStart:"設為起點",setEnd:"設為終點",clearMove:"清除",preview:"預覽",record:"錄製",recording:"錄製中…",mvNone:"請設定起點與終點",mvHalf:"已設起點 — 再設終點",mvReady:"就緒 · {t} 秒運鏡",mvUnsupported:"此瀏覽器不支援錄影",modeImage:"圖片",modeVideo:"影片",mvImageMode:"僅限影片模式"}},
+  arLock:"鎖定 {a} 軸",arMinus:"減少",arPlus:"增加",arLang:"語言",copyImg:"複製鏡頭畫面為圖片",floor:"地面格線",mvLabel:"運鏡",clipLabel:"影片",setStart:"設為起點",setEnd:"設為終點",clearMove:"清除",preview:"預覽",record:"錄製",recording:"錄製中…",mvNone:"請設定起點與終點",mvHalf:"已設起點 — 再設終點",mvReady:"就緒 · {t} 秒運鏡",mvUnsupported:"此瀏覽器不支援錄影",modeImage:"圖片",modeVideo:"影片",mvImageMode:"僅限影片模式"}},
 
 ja:{name:"日本語",code:"ja",sep:"、",end:"。",gen:"被写体",
  label:{cube:"立方体",sphere:"球体",phone:"スマホ",laptop:"ノートPC",human:"人物",car:"車",room:"部屋"},
@@ -930,7 +938,7 @@ ja:{name:"日本語",code:"ja",sep:"、",end:"。",gen:"被写体",
   eHigh:"ハイアングル",eAbove:"目線より上",eEye:"目線の高さ",eBelow:"目線より下",eLow:"ローアングル",
   lWide:"広角",lMild:"やや広角",lNeutral:"標準",lShort:"中望遠",lTele:"望遠",
   arRig:"リグビュー。ドラッグまたは矢印キーでカメラを移動します。",arCam:"カメラビュー。",
-  arLock:"{a} 軸をロック",arMinus:"減らす",arPlus:"増やす",arLang:"言語",copyImg:"カメラビューを画像としてコピー",mvLabel:"カメラ移動",clipLabel:"クリップ",setStart:"開始点に設定",setEnd:"終了点に設定",clearMove:"クリア",preview:"プレビュー",record:"録画",recording:"録画中…",mvNone:"開始点と終了点を設定",mvHalf:"開始点を設定済 — 次は終了点",mvReady:"準備完了 · {t}秒の移動",mvUnsupported:"このブラウザは録画に対応していません",modeImage:"画像",modeVideo:"動画",mvImageMode:"動画モードのみ"}},
+  arLock:"{a} 軸をロック",arMinus:"減らす",arPlus:"増やす",arLang:"言語",copyImg:"カメラビューを画像としてコピー",floor:"地面グリッド",mvLabel:"カメラ移動",clipLabel:"クリップ",setStart:"開始点に設定",setEnd:"終了点に設定",clearMove:"クリア",preview:"プレビュー",record:"録画",recording:"録画中…",mvNone:"開始点と終了点を設定",mvHalf:"開始点を設定済 — 次は終了点",mvReady:"準備完了 · {t}秒の移動",mvUnsupported:"このブラウザは録画に対応していません",modeImage:"画像",modeVideo:"動画",mvImageMode:"動画モードのみ"}},
 ko:{name:"한국어",code:"ko",sep:", ",end:".",gen:"피사체",
  label:{cube:"정육면체",sphere:"구",phone:"스마트폰",laptop:"노트북",human:"인물",car:"자동차",room:"방"},
  subj:{cube:"정육면체",sphere:"구체",phone:"스마트폰",laptop:"노트북",human:"인물",car:"자동차",room:"방"},
@@ -982,7 +990,7 @@ ko:{name:"한국어",code:"ko",sep:", ",end:".",gen:"피사체",
   eHigh:"하이앵글",eAbove:"눈높이 위",eEye:"눈높이",eBelow:"눈높이 아래",eLow:"로우앵글",
   lWide:"광각",lMild:"약광각",lNeutral:"표준",lShort:"준망원",lTele:"망원",
   arRig:"리그 뷰. 드래그하거나 방향키로 카메라를 이동합니다.",arCam:"카메라 뷰.",
-  arLock:"{a}축 잠금",arMinus:"감소",arPlus:"증가",arLang:"언어",copyImg:"카메라 뷰를 이미지로 복사",mvLabel:"무브",clipLabel:"클립",setStart:"시작점 설정",setEnd:"끝점 설정",clearMove:"지우기",preview:"미리보기",record:"녹화",recording:"녹화 중…",mvNone:"시작점과 끝점 설정",mvHalf:"시작점 설정됨 — 끝점 설정",mvReady:"준비됨 · {t}초 이동",mvUnsupported:"이 브라우저는 녹화를 지원하지 않습니다",modeImage:"이미지",modeVideo:"영상",mvImageMode:"영상 모드 전용"}},
+  arLock:"{a}축 잠금",arMinus:"감소",arPlus:"증가",arLang:"언어",copyImg:"카메라 뷰를 이미지로 복사",floor:"바닥 격자",mvLabel:"무브",clipLabel:"클립",setStart:"시작점 설정",setEnd:"끝점 설정",clearMove:"지우기",preview:"미리보기",record:"녹화",recording:"녹화 중…",mvNone:"시작점과 끝점 설정",mvHalf:"시작점 설정됨 — 끝점 설정",mvReady:"준비됨 · {t}초 이동",mvUnsupported:"이 브라우저는 녹화를 지원하지 않습니다",modeImage:"이미지",modeVideo:"영상",mvImageMode:"영상 모드 전용"}},
 
 es:{name:"Español",code:"es",sep:", ",end:".",gen:"el sujeto",
  label:{cube:"Cubo",sphere:"Esfera",phone:"Móvil",laptop:"Portátil",human:"Figura",car:"Coche",room:"Sala"},
@@ -1035,7 +1043,7 @@ es:{name:"Español",code:"es",sep:", ",end:".",gen:"el sujeto",
   eHigh:"picado",eAbove:"sobre los ojos",eEye:"altura de los ojos",eBelow:"bajo los ojos",eLow:"contrapicado",
   lWide:"angular",lMild:"angular suave",lNeutral:"neutro",lShort:"tele corto",lTele:"teleobjetivo",
   arRig:"Vista de plató. Arrastra o usa las flechas para mover la cámara.",arCam:"Vista de cámara.",
-  arLock:"Fijar el eje {a}",arMinus:"disminuir",arPlus:"aumentar",arLang:"Idioma",copyImg:"Copiar la vista de cámara como imagen",mvLabel:"Movimiento",clipLabel:"Clip",setStart:"Fijar inicio",setEnd:"Fijar final",clearMove:"Borrar",preview:"Vista previa",record:"Grabar",recording:"Grabando…",mvNone:"Fija ambos puntos",mvHalf:"Inicio fijado — fija el final",mvReady:"Listo · movimiento de {t} s",mvUnsupported:"Este navegador no admite la grabación",modeImage:"Imagen",modeVideo:"Vídeo",mvImageMode:"Solo en modo Vídeo"}},
+  arLock:"Fijar el eje {a}",arMinus:"disminuir",arPlus:"aumentar",arLang:"Idioma",copyImg:"Copiar la vista de cámara como imagen",floor:"Plano del suelo",mvLabel:"Movimiento",clipLabel:"Clip",setStart:"Fijar inicio",setEnd:"Fijar final",clearMove:"Borrar",preview:"Vista previa",record:"Grabar",recording:"Grabando…",mvNone:"Fija ambos puntos",mvHalf:"Inicio fijado — fija el final",mvReady:"Listo · movimiento de {t} s",mvUnsupported:"Este navegador no admite la grabación",modeImage:"Imagen",modeVideo:"Vídeo",mvImageMode:"Solo en modo Vídeo"}},
 fr:{name:"Français",code:"fr",sep:", ",end:".",gen:"le sujet",
  label:{cube:"Cube",sphere:"Sphère",phone:"Téléphone",laptop:"Portable",human:"Personnage",car:"Voiture",room:"Pièce"},
  subj:{cube:"du cube",sphere:"de la sphère",phone:"du téléphone",laptop:"de l'ordinateur portable",human:"du personnage",car:"de la voiture",room:"de la pièce"},
@@ -1087,7 +1095,7 @@ fr:{name:"Français",code:"fr",sep:", ",end:".",gen:"le sujet",
   eHigh:"plongée",eAbove:"au-dessus",eEye:"hauteur des yeux",eBelow:"en dessous",eLow:"contre-plongée",
   lWide:"grand-angle",lMild:"légèrement large",lNeutral:"neutre",lShort:"télé court",lTele:"téléobjectif",
   arRig:"Vue plateau. Faites glisser ou utilisez les flèches pour déplacer la caméra.",arCam:"Vue caméra.",
-  arLock:"Bloquer l'axe {a}",arMinus:"diminuer",arPlus:"augmenter",arLang:"Langue",copyImg:"Copier la vue caméra en image",mvLabel:"Mouvement",clipLabel:"Clip",setStart:"Définir le début",setEnd:"Définir la fin",clearMove:"Effacer",preview:"Aperçu",record:"Enregistrer",recording:"Enregistrement…",mvNone:"Définissez les deux points",mvHalf:"Départ défini — définissez la fin",mvReady:"Prêt · mouvement de {t} s",mvUnsupported:"Ce navigateur ne prend pas en charge l'enregistrement",modeImage:"Image",modeVideo:"Vidéo",mvImageMode:"Mode Vidéo uniquement"}},
+  arLock:"Bloquer l'axe {a}",arMinus:"diminuer",arPlus:"augmenter",arLang:"Langue",copyImg:"Copier la vue caméra en image",floor:"Plan du sol",mvLabel:"Mouvement",clipLabel:"Clip",setStart:"Définir le début",setEnd:"Définir la fin",clearMove:"Effacer",preview:"Aperçu",record:"Enregistrer",recording:"Enregistrement…",mvNone:"Définissez les deux points",mvHalf:"Départ défini — définissez la fin",mvReady:"Prêt · mouvement de {t} s",mvUnsupported:"Ce navigateur ne prend pas en charge l'enregistrement",modeImage:"Image",modeVideo:"Vidéo",mvImageMode:"Mode Vidéo uniquement"}},
 
 de:{name:"Deutsch",code:"de",sep:", ",end:".",gen:"das Motiv",
  label:{cube:"Würfel",sphere:"Kugel",phone:"Handy",laptop:"Laptop",human:"Figur",car:"Auto",room:"Raum"},
@@ -1140,7 +1148,7 @@ de:{name:"Deutsch",code:"de",sep:", ",end:".",gen:"das Motiv",
   eHigh:"starke Aufsicht",eAbove:"über Augenhöhe",eEye:"Augenhöhe",eBelow:"unter Augenhöhe",eLow:"Untersicht",
   lWide:"Weitwinkel",lMild:"leicht weit",lNeutral:"neutral",lShort:"Kurztele",lTele:"Tele",
   arRig:"Rig-Ansicht. Ziehen oder Pfeiltasten verwenden, um die Kamera zu bewegen.",arCam:"Kamera-Ansicht.",
-  arLock:"Achse {a} sperren",arMinus:"verringern",arPlus:"erhöhen",arLang:"Sprache",copyImg:"Kameraansicht als Bild kopieren",mvLabel:"Bewegung",clipLabel:"Clip",setStart:"Start setzen",setEnd:"Ende setzen",clearMove:"Löschen",preview:"Vorschau",record:"Aufnehmen",recording:"Nimmt auf…",mvNone:"Beide Punkte setzen",mvHalf:"Start gesetzt — Ende setzen",mvReady:"Bereit · {t}s Bewegung",mvUnsupported:"Dieser Browser unterstützt keine Aufnahme",modeImage:"Bild",modeVideo:"Video",mvImageMode:"Nur im Video-Modus"}},
+  arLock:"Achse {a} sperren",arMinus:"verringern",arPlus:"erhöhen",arLang:"Sprache",copyImg:"Kameraansicht als Bild kopieren",floor:"Bodenraster",mvLabel:"Bewegung",clipLabel:"Clip",setStart:"Start setzen",setEnd:"Ende setzen",clearMove:"Löschen",preview:"Vorschau",record:"Aufnehmen",recording:"Nimmt auf…",mvNone:"Beide Punkte setzen",mvHalf:"Start gesetzt — Ende setzen",mvReady:"Bereit · {t}s Bewegung",mvUnsupported:"Dieser Browser unterstützt keine Aufnahme",modeImage:"Bild",modeVideo:"Video",mvImageMode:"Nur im Video-Modus"}},
 pt:{name:"Português",code:"pt",sep:", ",end:".",gen:"o sujeito",
  label:{cube:"Cubo",sphere:"Esfera",phone:"Telemóvel",laptop:"Portátil",human:"Figura",car:"Carro",room:"Sala"},
  subj:{cube:"do cubo",sphere:"da esfera",phone:"do telemóvel",laptop:"do portátil",human:"da figura",car:"do carro",room:"da sala"},
@@ -1192,7 +1200,7 @@ pt:{name:"Português",code:"pt",sep:", ",end:".",gen:"o sujeito",
   eHigh:"picado",eAbove:"acima dos olhos",eEye:"altura dos olhos",eBelow:"abaixo dos olhos",eLow:"contrapicado",
   lWide:"grande-angular",lMild:"pouco angular",lNeutral:"neutra",lShort:"tele curta",lTele:"teleobjetiva",
   arRig:"Vista de estúdio. Arraste ou use as setas para mover a câmara.",arCam:"Vista da câmara.",
-  arLock:"Fixar o eixo {a}",arMinus:"diminuir",arPlus:"aumentar",arLang:"Idioma",copyImg:"Copiar a vista da câmara como imagem",mvLabel:"Movimento",clipLabel:"Clipe",setStart:"Definir início",setEnd:"Definir fim",clearMove:"Limpar",preview:"Pré-visualizar",record:"Gravar",recording:"A gravar…",mvNone:"Define ambos os pontos",mvHalf:"Início definido — define o fim",mvReady:"Pronto · movimento de {t} s",mvUnsupported:"Este navegador não suporta gravação",modeImage:"Imagem",modeVideo:"Vídeo",mvImageMode:"Apenas no modo Vídeo"}},
+  arLock:"Fixar o eixo {a}",arMinus:"diminuir",arPlus:"aumentar",arLang:"Idioma",copyImg:"Copiar a vista da câmara como imagem",floor:"Plano do chão",mvLabel:"Movimento",clipLabel:"Clipe",setStart:"Definir início",setEnd:"Definir fim",clearMove:"Limpar",preview:"Pré-visualizar",record:"Gravar",recording:"A gravar…",mvNone:"Define ambos os pontos",mvHalf:"Início definido — define o fim",mvReady:"Pronto · movimento de {t} s",mvUnsupported:"Este navegador não suporta gravação",modeImage:"Imagem",modeVideo:"Vídeo",mvImageMode:"Apenas no modo Vídeo"}},
 
 ru:{name:"Русский",code:"ru",sep:", ",end:".",gen:"объект",
  label:{cube:"Куб",sphere:"Сфера",phone:"Телефон",laptop:"Ноутбук",human:"Фигура",car:"Машина",room:"Комната"},
@@ -1245,7 +1253,7 @@ ru:{name:"Русский",code:"ru",sep:", ",end:".",gen:"объект",
   eHigh:"верхний ракурс",eAbove:"выше глаз",eEye:"уровень глаз",eBelow:"ниже глаз",eLow:"нижний ракурс",
   lWide:"широкий",lMild:"слегка широкий",lNeutral:"нейтральный",lShort:"короткий теле",lTele:"телефото",
   arRig:"Вид сцены. Перетаскивайте или используйте стрелки, чтобы двигать камеру.",arCam:"Вид камеры.",
-  arLock:"Закрепить ось {a}",arMinus:"уменьшить",arPlus:"увеличить",arLang:"Язык",copyImg:"Скопировать вид камеры как изображение",mvLabel:"Движение",clipLabel:"Клип",setStart:"Задать начало",setEnd:"Задать конец",clearMove:"Сбросить",preview:"Просмотр",record:"Запись",recording:"Идёт запись…",mvNone:"Задайте обе точки",mvHalf:"Начало задано — задайте конец",mvReady:"Готово · движение {t} с",mvUnsupported:"Этот браузер не поддерживает запись",modeImage:"Изображение",modeVideo:"Видео",mvImageMode:"Только в режиме «Видео»"}},
+  arLock:"Закрепить ось {a}",arMinus:"уменьшить",arPlus:"увеличить",arLang:"Язык",copyImg:"Скопировать вид камеры как изображение",floor:"Плоскость пола",mvLabel:"Движение",clipLabel:"Клип",setStart:"Задать начало",setEnd:"Задать конец",clearMove:"Сбросить",preview:"Просмотр",record:"Запись",recording:"Идёт запись…",mvNone:"Задайте обе точки",mvHalf:"Начало задано — задайте конец",mvReady:"Готово · движение {t} с",mvUnsupported:"Этот браузер не поддерживает запись",modeImage:"Изображение",modeVideo:"Видео",mvImageMode:"Только в режиме «Видео»"}},
 
 it:{name:"Italiano",code:"it",sep:", ",end:".",gen:"il soggetto",
  label:{cube:"Cubo",sphere:"Sfera",phone:"Telefono",laptop:"Portatile",human:"Figura",car:"Auto",room:"Stanza"},
@@ -1298,7 +1306,7 @@ it:{name:"Italiano",code:"it",sep:", ",end:".",gen:"il soggetto",
   eHigh:"dall'alto",eAbove:"sopra gli occhi",eEye:"altezza occhi",eBelow:"sotto gli occhi",eLow:"dal basso",
   lWide:"grandangolo",lMild:"poco largo",lNeutral:"neutro",lShort:"tele corto",lTele:"teleobiettivo",
   arRig:"Vista set. Trascina o usa le frecce per muovere la camera.",arCam:"Vista camera.",
-  arLock:"Blocca l'asse {a}",arMinus:"diminuisci",arPlus:"aumenta",arLang:"Lingua",copyImg:"Copia la vista camera come immagine",mvLabel:"Movimento",clipLabel:"Clip",setStart:"Imposta inizio",setEnd:"Imposta fine",clearMove:"Cancella",preview:"Anteprima",record:"Registra",recording:"Registrazione…",mvNone:"Imposta entrambi i punti",mvHalf:"Inizio impostato — imposta la fine",mvReady:"Pronto · movimento di {t} s",mvUnsupported:"Questo browser non supporta la registrazione",modeImage:"Immagine",modeVideo:"Video",mvImageMode:"Solo in modalità Video"}}
+  arLock:"Blocca l'asse {a}",arMinus:"diminuisci",arPlus:"aumenta",arLang:"Lingua",copyImg:"Copia la vista camera come immagine",floor:"Piano del pavimento",mvLabel:"Movimento",clipLabel:"Clip",setStart:"Imposta inizio",setEnd:"Imposta fine",clearMove:"Cancella",preview:"Anteprima",record:"Registra",recording:"Registrazione…",mvNone:"Imposta entrambi i punti",mvHalf:"Inizio impostato — imposta la fine",mvReady:"Pronto · movimento di {t} s",mvUnsupported:"Questo browser non supporta la registrazione",modeImage:"Immagine",modeVideo:"Video",mvImageMode:"Solo in modalità Video"}}
 };
 
 let LANG=store.get("fta-lang")||"";
@@ -1868,6 +1876,7 @@ function applyUI(){
   $("lang").setAttribute("aria-label",u.arLang);
   $("copyImg").setAttribute("aria-label",u.copyImg);
   $("copyImg").setAttribute("title",u.copyImg);
+  $("floorBtn").setAttribute("aria-label",u.floor);$("floorBtn").setAttribute("title",u.floor);
   $("lbl-move").textContent=u.mvLabel;$("lbl-clip").textContent=u.clipLabel;
   $("setA").textContent=u.setStart;$("setB").textContent=u.setEnd;
   $("clrMove").textContent=u.clearMove;
@@ -1888,7 +1897,7 @@ function applyUI(){
 function render(){
   sync();
   const o=OBJECTS[S.obj];
-  const lines=o.lines(),grid=o.noGround?[]:groundGrid(o);
+  const lines=o.lines(),grid=(o.noGround||!FLOOR)?[]:groundGrid(o);
   drawRig(o,lines,grid);
   drawCam(o,lines,grid);
 
@@ -2052,7 +2061,7 @@ function promptText(){
   return start+(PROMPT[LANG]||PROMPT.en).join+describeMove();
 }
 function drawFrame(ctx,W,H,pose){
-  const o=OBJECTS[S.obj],lines=o.lines(),grid=o.noGround?[]:groundGrid(o);
+  const o=OBJECTS[S.obj],lines=o.lines(),grid=(o.noGround||!FLOOR)?[]:groundGrid(o);
   ctx.fillStyle=CSS("--knockout");ctx.fillRect(0,0,W,H);
   ctx.lineJoin=ctx.lineCap="round";
   const V=view(pose.p,[0,0,0]),sc=(W/2)*pose.f/18;
@@ -2128,6 +2137,7 @@ function setMoveUI(){
   $("n-clip").textContent=!vid?"":(canRecord()?`${MOVE.dur}s · 1200×800`:u.mvUnsupported);
   document.querySelectorAll("#mode button").forEach(b=>
     b.setAttribute("aria-pressed",String(b.dataset.m===MODE)));
+  $("floorBtn").setAttribute("aria-pressed",String(FLOOR));
   document.querySelectorAll("#dur button").forEach(b=>
     b.setAttribute("aria-pressed",String(+b.dataset.d===MOVE.dur)));
 }
@@ -2186,6 +2196,7 @@ $("setB").onclick=()=>{MOVE.b={p:S.p.slice(),f:S.f};render();};
 $("clrMove").onclick=()=>{MOVE.a=MOVE.b=null;render();};
 $("prevMove").onclick=previewMove;
 $("rec").onclick=recordMove;
+$("floorBtn").onclick=()=>{FLOOR=!FLOOR;store.set("fta-floor",FLOOR?"1":"0");render();};
 $("mode").onclick=e=>{const b=e.target.closest("button");
   if(b){MODE=b.dataset.m;store.set("fta-mode",MODE);render();}};
 
